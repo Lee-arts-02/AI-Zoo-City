@@ -36,7 +36,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "peacock",
     name: "Pablo the Peacock",
-    avatar: "/animals/peacock.png",
+    avatar: "/animals/peacock1.png",
     traits: ["bold", "expressive"],
     dreamJob: "artist",
     aiRecommendation: { artist: 61, community: 15, engineer: 8, manager: 16 },
@@ -45,7 +45,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "cat",
     name: "Cleo the Cat",
-    avatar: "/animals/cat.png",
+    avatar: "/animals/cat1.png",
     traits: ["independent", "precise"],
     dreamJob: "manager",
     aiRecommendation: { artist: 22, community: 14, engineer: 18, manager: 46 },
@@ -63,7 +63,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "beaver",
     name: "Bridget the Beaver",
-    avatar: "/animals/beaver.png",
+    avatar: "/animals/beaver1.png",
     traits: ["patient", "builder"],
     dreamJob: "engineer",
     aiRecommendation: { artist: 12, community: 24, engineer: 52, manager: 12 },
@@ -72,7 +72,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "owl",
     name: "Orin the Owl",
-    avatar: "/animals/owl.png",
+    avatar: "/animals/owl1.png",
     traits: ["thoughtful", "wise"],
     dreamJob: "community",
     aiRecommendation: { artist: 25, community: 38, engineer: 17, manager: 20 },
@@ -81,7 +81,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "raccoon",
     name: "Riley the Raccoon",
-    avatar: "/animals/raccoon.png",
+    avatar: "/animals/raccoon1.png",
     traits: ["resourceful", "playful"],
     dreamJob: "artist",
     aiRecommendation: { artist: 42, community: 28, engineer: 14, manager: 16 },
@@ -90,7 +90,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "elephant",
     name: "Ellie the Elephant",
-    avatar: "/animals/elephant.png",
+    avatar: "/animals/elephant1.png",
     traits: ["steady", "kind"],
     dreamJob: "community",
     aiRecommendation: { artist: 14, community: 55, engineer: 11, manager: 20 },
@@ -99,7 +99,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "dog",
     name: "Danny the Dog",
-    avatar: "/animals/dog.png",
+    avatar: "/animals/dog1.png",
     traits: ["loyal", "energetic"],
     dreamJob: "community",
     aiRecommendation: { artist: 19, community: 49, engineer: 10, manager: 22 },
@@ -108,7 +108,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "lion",
     name: "Leo the Lion",
-    avatar: "/animals/lion.png",
+    avatar: "/animals/lion1.png",
     traits: ["brave", "leading"],
     dreamJob: "manager",
     aiRecommendation: { artist: 10, community: 20, engineer: 14, manager: 56 },
@@ -126,7 +126,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "wolf",
     name: "Willa the Wolf",
-    avatar: "/animals/wolf.png",
+    avatar: "/animals/wolf1.png",
     traits: ["loyal", "strategic"],
     dreamJob: "manager",
     aiRecommendation: { artist: 15, community: 22, engineer: 20, manager: 43 },
@@ -135,7 +135,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "eagle",
     name: "Ezra the Eagle",
-    avatar: "/animals/eagle.png",
+    avatar: "/animals/eagle1.png",
     traits: ["focused", "visionary"],
     dreamJob: "manager",
     aiRecommendation: { artist: 18, community: 16, engineer: 22, manager: 44 },
@@ -144,7 +144,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "sheep",
     name: "Shea the Sheep",
-    avatar: "/animals/sheep.png",
+    avatar: "/animals/sheep1.png",
     traits: ["warm", "steady"],
     dreamJob: "community",
     aiRecommendation: { artist: 28, community: 41, engineer: 9, manager: 22 },
@@ -153,7 +153,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
   {
     id: "turtle",
     name: "Tessa the Turtle",
-    avatar: "/animals/turtle.png",
+    avatar: "/animals/turtle1.png",
     traits: ["patient", "careful"],
     dreamJob: "engineer",
     aiRecommendation: { artist: 14, community: 26, engineer: 48, manager: 12 },
