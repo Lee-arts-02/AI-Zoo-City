@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { getDistrictConfig } from "@/data/districtConfig";
-import { animalAssets } from "@/data/animalAssets";
+import { animalAssets, isZooCityAnimalId } from "@/data/animalAssets";
 import { getDistrictPercentages, getTopAnimals } from "@/lib/cityUtils";
 import type { DistrictId } from "@/types/city";
 
@@ -45,7 +45,11 @@ export default function DistrictDashboard({ districtId, className = "" }: Distri
               {rows.map((row) => (
                 <li key={row.animal}>
                   <div className="mb-1 flex items-center justify-between text-sm font-medium text-stone-900">
-                    <span>{animalAssets[row.animal]?.label ?? row.animal}</span>
+                    <span>
+                      {isZooCityAnimalId(row.animal)
+                        ? animalAssets[row.animal].label
+                        : row.animal}
+                    </span>
                     <span>{row.percentage}%</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-stone-900/10">
@@ -65,18 +69,19 @@ export default function DistrictDashboard({ districtId, className = "" }: Distri
             </p>
             <ul className="mt-3 flex flex-wrap gap-6">
               {topAnimals.map((item) => {
+                if (!isZooCityAnimalId(item.animal)) return null;
                 const asset = animalAssets[item.animal];
                 return (
                   <li key={item.animal} className="flex flex-col items-center gap-1.5 text-center">
                     <Image
-                      src={asset?.image ?? "/globe.svg"}
-                      alt={asset?.label ?? item.animal}
+                      src={asset.image}
+                      alt={asset.label}
                       width={64}
                       height={64}
                       className="object-contain [filter:drop-shadow(0_4px_8px_rgba(0,0,0,0.2))]"
                     />
                     <span className="max-w-[6rem] text-xs font-medium text-stone-900">
-                      {asset?.label ?? item.animal}
+                      {asset.label}
                     </span>
                   </li>
                 );

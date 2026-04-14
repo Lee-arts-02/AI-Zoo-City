@@ -103,29 +103,35 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
       className="rounded-3xl border-4 border-amber-200 bg-gradient-to-b from-amber-50 to-orange-50 p-6 shadow-[8px_8px_0_0_rgba(251,191,36,0.4)] sm:p-8"
       aria-labelledby="step1-title"
     >
-      <div className="mb-8 rounded-2xl border-2 border-amber-300/60 bg-white/70 p-5 shadow-inner">
-        <p className="mb-2 font-serif text-sm font-medium uppercase tracking-widest text-amber-800/80">
-          Story
-        </p>
-        <p
-          id="step1-title"
-          className="font-serif text-lg leading-relaxed text-amber-950 sm:text-xl"
-        >
-          Welcome to Zoo City.
-          <br />
-          In this city, every animal is matched to a job by an AI system.
-          <br />
-          Before you enter, the system needs to know who you are.
-        </p>
-      </div>
+      <div className="w-full max-w-[1000px] mx-auto px-4 md:px-6">
+        <div className="mb-10 rounded-2xl border-2 border-amber-300/60 bg-white/70 p-6 text-center shadow-inner md:p-8">
+          <p className="mb-2 font-serif text-sm font-medium uppercase tracking-widest text-amber-800/80">
+            Story
+          </p>
+          <p
+            id="step1-title"
+            className="mx-auto max-w-2xl font-serif text-lg leading-relaxed text-amber-950 sm:text-xl"
+          >
+            Welcome to Zoo City.
+            <br />
+            In this city, every animal is matched to a job by an AI system.
+            <br />
+            Before you enter, the system needs to know who you are.
+          </p>
+        </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_min(320px,100%)] lg:items-start">
-        <div className="space-y-8">
-          <div>
-            <h2 className="mb-3 font-serif text-2xl font-bold text-amber-950">
-              Choose your animal
+        <div className="flex flex-col gap-10 md:gap-12">
+          <section
+            className="w-full"
+            aria-labelledby="step1-animal-heading"
+          >
+            <h2
+              id="step1-animal-heading"
+              className="mb-6 text-center font-serif text-2xl font-bold text-amber-950 md:text-3xl"
+            >
+              1. Choose your animal
             </h2>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {PRESET_ANIMALS.map((a) => {
                 const isOn = selectedPreset === a.id && !hasCustomFocus;
                 return (
@@ -150,7 +156,7 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
                 );
               })}
             </div>
-            <label className="mt-4 block font-serif text-sm font-semibold text-amber-900">
+            <label className="mx-auto mt-6 block max-w-xl font-serif text-sm font-semibold text-amber-900">
               Or create your own animal
               <input
                 type="text"
@@ -160,20 +166,26 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
                 className="mt-2 w-full rounded-xl border-2 border-amber-300 bg-white px-3 py-2 font-serif text-amber-950 placeholder:text-amber-800/40 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
               />
             </label>
-          </div>
+          </section>
 
-          <div>
-            <h2 className="mb-1 font-serif text-2xl font-bold text-amber-950">
-              Describe yourself (traits)
+          <section
+            className="w-full"
+            aria-labelledby="step1-traits-heading"
+          >
+            <h2
+              id="step1-traits-heading"
+              className="mb-2 text-center font-serif text-2xl font-bold text-amber-950 md:text-3xl"
+            >
+              2. Describe yourself
             </h2>
-            <p className="mb-3 font-serif text-sm text-amber-900/80">
+            <p className="mx-auto mb-6 max-w-2xl text-center font-serif text-sm text-amber-900/85 md:text-base">
               Pick up to three traits from the suggestions, or add your own words
               below.
             </p>
-            <h3 className="mb-2 font-serif text-base font-semibold text-amber-950">
+            <h3 className="mb-3 text-center font-serif text-base font-semibold text-amber-950">
               Suggested traits
             </h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
               {SUGGESTED_TRAITS.map((t) => {
                 const on = learner.traits.includes(t);
                 const disabled = !on && learner.traits.length >= 3;
@@ -197,15 +209,15 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
                 );
               })}
             </div>
-            <div className="mt-5 rounded-2xl border-2 border-amber-300/70 bg-amber-50/50 p-4">
-              <h3 className="mb-2 font-serif text-base font-semibold text-amber-950">
-                Custom traits
+            <div className="mx-auto mt-8 max-w-2xl rounded-2xl border-2 border-amber-300/70 bg-amber-50/50 p-5 md:p-6">
+              <h3 className="mb-2 text-center font-serif text-base font-semibold text-amber-950">
+                Your own words
               </h3>
-              <p className="mb-3 font-serif text-sm text-amber-900/80">
-                Type your own trait words (e.g. <em>clever</em>,{" "}
-                <em>brave</em>), then add them to your card.
+              <p className="mb-4 text-center font-serif text-sm text-amber-900/80">
+                Type trait words (e.g. <em>clever</em>, <em>brave</em>), then add
+                them to your card.
               </p>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="min-w-0 flex-1">
                   <label
                     htmlFor={traitFieldId}
@@ -236,21 +248,27 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
                   Add words
                 </button>
               </div>
-              <p className="mt-2 font-serif text-xs text-amber-800/70">
+              <p className="mt-3 text-center font-serif text-xs text-amber-800/70">
                 Add words shows them on your card (max 3). Known words also
                 nudge the AI model.
               </p>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <h2 className="mb-3 font-serif text-2xl font-bold text-amber-950">
-              Dream job
+          <section
+            className="w-full"
+            aria-labelledby="step1-dream-heading"
+          >
+            <h2
+              id="step1-dream-heading"
+              className="mb-6 text-center font-serif text-2xl font-bold text-amber-950 md:text-3xl"
+            >
+              3. Dream job
             </h2>
-            <h3 className="mb-2 font-serif text-base font-semibold text-amber-950">
+            <h3 className="mb-3 text-center font-serif text-base font-semibold text-amber-950">
               Preset roles
             </h3>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
               {DREAM_JOBS.map((j) => {
                 const isOn =
                   learner.dreamJob === j.id &&
@@ -296,16 +314,16 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
                 </span>
               </button>
             </div>
-            <div className="mt-5 rounded-2xl border-2 border-amber-300/70 bg-amber-50/50 p-4">
-              <h3 className="mb-2 font-serif text-base font-semibold text-amber-950">
+            <div className="mx-auto mt-8 max-w-2xl rounded-2xl border-2 border-amber-300/70 bg-amber-50/50 p-5 md:p-6">
+              <h3 className="mb-2 text-center font-serif text-base font-semibold text-amber-950">
                 Custom dream role
               </h3>
-              <p className="mb-2 font-serif text-sm text-amber-900/80">
+              <p className="mb-4 text-center font-serif text-sm text-amber-900/80">
                 Describe any role you like. This appears on your card; the
                 activity still uses a nearby preset behind the scenes for the
                 AI demo.
               </p>
-              <label className="block font-serif text-sm font-medium text-amber-900">
+              <label className="mx-auto block max-w-lg font-serif text-sm font-medium text-amber-900">
                 Your dream
                 <input
                   type="text"
@@ -316,11 +334,11 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
                 />
               </label>
             </div>
-          </div>
+          </section>
 
-          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-center gap-4 pt-4">
             {!complete && (
-              <p className="font-serif text-sm text-orange-800">
+              <p className="max-w-lg text-center font-serif text-sm text-orange-800">
                 Choose an animal, at least one trait, and a dream role (preset
                 or custom) to continue.
               </p>
@@ -329,21 +347,20 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
               type="button"
               disabled={!complete}
               onClick={onEnterAISystem}
-              className="min-h-[52px] rounded-2xl border-2 border-amber-900 bg-gradient-to-r from-amber-400 to-orange-400 px-6 font-serif text-lg font-bold text-amber-950 shadow-[4px_4px_0_0_rgba(120,53,15,0.3)] transition enabled:hover:translate-y-px enabled:hover:from-amber-300 enabled:hover:to-orange-300 disabled:cursor-not-allowed disabled:opacity-40"
+              className="min-h-[52px] w-full max-w-md rounded-2xl border-2 border-amber-900 bg-gradient-to-r from-amber-400 to-orange-400 px-6 font-serif text-lg font-bold text-amber-950 shadow-[4px_4px_0_0_rgba(120,53,15,0.3)] transition enabled:hover:translate-y-px enabled:hover:from-amber-300 enabled:hover:to-orange-300 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Enter the AI System →
             </button>
           </div>
-        </div>
 
-        <aside
-          className="rounded-2xl border-4 border-amber-300 bg-gradient-to-br from-white to-amber-100/90 p-5 shadow-[6px_6px_0_0_rgba(217,119,6,0.25)]"
-          aria-live="polite"
-        >
-          <p className="mb-2 font-serif text-xs font-bold uppercase tracking-widest text-amber-800/80">
+          <aside
+            className="mx-auto mt-4 w-full max-w-lg rounded-2xl border-4 border-amber-300 bg-gradient-to-br from-white to-amber-100/90 p-6 shadow-[6px_6px_0_0_rgba(217,119,6,0.25)]"
+            aria-live="polite"
+          >
+          <p className="mb-2 text-center font-serif text-xs font-bold uppercase tracking-widest text-amber-800/80">
             Live character card
           </p>
-          <div className="mb-3 flex items-center gap-2">
+          <div className="mb-3 flex items-center justify-center gap-2">
             <span className="text-4xl" aria-hidden>
               {PRESET_ANIMALS.find((a) => a.id === selectedPreset)?.emoji ??
                 "✨"}
@@ -352,11 +369,11 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
               {displayName}
             </span>
           </div>
-          <p className="font-serif text-base leading-relaxed text-amber-950">
+          <p className="text-center font-serif text-base leading-relaxed text-amber-950">
             {learner.description}
           </p>
           {learner.traits.length > 0 && (
-            <ul className="mt-3 flex flex-wrap gap-1">
+            <ul className="mt-3 flex flex-wrap justify-center gap-1">
               {learner.traits.map((t) => (
                 <li
                   key={t}
@@ -367,7 +384,8 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
               ))}
             </ul>
           )}
-        </aside>
+          </aside>
+        </div>
       </div>
     </section>
   );

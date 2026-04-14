@@ -2,6 +2,7 @@
  * Shared types for AI Zoo City learner profile and game progress.
  */
 
+import type { DistrictId } from "@/types/city";
 import type { RedesignRegionId } from "@/types/city";
 
 export type JobId = "artist" | "engineer" | "manager" | "community";
@@ -12,9 +13,9 @@ export type PresetAnimal =
   | "bear"
   | "elephant"
   | "deer"
-  | "owl"
-  | "beaver"
-  | "lion";
+  | "lion"
+  | "cat"
+  | "sheep";
 
 export type DreamJob = JobId;
 
@@ -55,6 +56,10 @@ export type Step7CareerChoice = "follow_ai" | "own_path" | "new_path";
 export type GameProgress = {
   judgmentSeen: boolean;
   originalCitySeen: boolean;
+  /** Step 3: unique districts the learner opened (detail view); used for organizer reflection gate. */
+  step3DistrictsVisited: DistrictId[];
+  /** Step 3: learner clicked “View more from the current Zoo City” in the axis organizer. */
+  step3OrganizerRevealActivated: boolean;
   aiExplained: boolean;
   redesignDraft: RedesignDraft | null;
   comparisonSeen: boolean;

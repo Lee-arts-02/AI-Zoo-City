@@ -4,6 +4,7 @@ import DistrictDashboard from "@/components/city/DistrictDashboard";
 import DistrictScene from "@/components/city/DistrictScene";
 import { getDistrictConfig } from "@/data/districtConfig";
 import type { DistrictId } from "@/types/city";
+import type { ReactNode } from "react";
 
 const PANEL_CLASS = "w-[min(22rem,calc(100vw-3rem))] max-w-[min(22rem,92vw)]";
 
@@ -14,6 +15,8 @@ export type Step3DistrictDetailProps = {
   onBack: () => void;
   /** When true, remind learners to return to the map to open the machine (Step 4 gate). */
   showSortingMachineHint?: boolean;
+  /** Interactive layer on the district illustration (sorting space toggle + organizer). */
+  sceneOverlay?: ReactNode;
 };
 
 export default function Step3DistrictDetail({
@@ -22,6 +25,7 @@ export default function Step3DistrictDetail({
   onDashboardOpenChange,
   onBack,
   showSortingMachineHint = false,
+  sceneOverlay,
 }: Step3DistrictDetailProps) {
   const district = getDistrictConfig(districtId);
 
@@ -76,7 +80,7 @@ export default function Step3DistrictDetail({
       </div>
 
       <div className="min-h-0 w-full flex-1">
-        <DistrictScene districtId={districtId} aside={drawer} />
+        <DistrictScene districtId={districtId} aside={drawer} overlay={sceneOverlay} />
       </div>
 
       <div className="shrink-0 space-y-2 text-center text-sm text-stone-600">
@@ -87,8 +91,8 @@ export default function Step3DistrictDetail({
         </p>
         {showSortingMachineHint ? (
           <p className="rounded-xl bg-amber-50 px-3 py-2 text-amber-950 ring-1 ring-amber-200/80">
-            To open the sorting machine, go back to the city overview — that is where the story
-            continues.
+            When you are ready, go back to the city overview to open the City Sorting Machine (after
+            the teal sorting space steps are complete).
           </p>
         ) : null}
       </div>

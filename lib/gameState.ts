@@ -32,6 +32,8 @@ export const initialGameState: GameState = {
   progress: {
     judgmentSeen: false,
     originalCitySeen: false,
+    step3DistrictsVisited: [],
+    step3OrganizerRevealActivated: false,
     aiExplained: false,
     redesignDraft: null,
     comparisonSeen: false,

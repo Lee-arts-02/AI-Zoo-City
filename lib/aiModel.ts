@@ -45,14 +45,14 @@ export const animalPrior: Record<
   string,
   Record<JobId, number>
 > = {
-  fox: { artist: 0.15, engineer: 0.2, manager: 0.45, community: 0.2 },
-  rabbit: { artist: 0.4, engineer: 0.15, manager: 0.1, community: 0.35 },
-  beaver: { artist: 0.1, engineer: 0.55, manager: 0.15, community: 0.2 },
-  lion: { artist: 0.1, engineer: 0.15, manager: 0.6, community: 0.15 },
-  elephant: { artist: 0.1, engineer: 0.2, manager: 0.25, community: 0.45 },
-  deer: { artist: 0.3, engineer: 0.15, manager: 0.15, community: 0.4 },
-  owl: { artist: 0.15, engineer: 0.45, manager: 0.25, community: 0.15 },
-  bear: { artist: 0.1, engineer: 0.3, manager: 0.4, community: 0.2 },
+  rabbit: { artist: 0.42, engineer: 0.14, manager: 0.12, community: 0.32 },
+  fox: { artist: 0.14, engineer: 0.44, manager: 0.22, community: 0.2 },
+  bear: { artist: 0.1, engineer: 0.22, manager: 0.46, community: 0.22 },
+  elephant: { artist: 0.1, engineer: 0.18, manager: 0.22, community: 0.5 },
+  deer: { artist: 0.26, engineer: 0.14, manager: 0.16, community: 0.44 },
+  lion: { artist: 0.08, engineer: 0.14, manager: 0.58, community: 0.2 },
+  cat: { artist: 0.18, engineer: 0.2, manager: 0.44, community: 0.18 },
+  sheep: { artist: 0.22, engineer: 0.1, manager: 0.18, community: 0.5 },
 };
 
 /** Uniform prior for custom animals (sums to 1). */

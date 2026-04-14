@@ -1,9 +1,11 @@
+import { ZooCityBeginBackdrop } from "@/components/shared/ZooCityBeginBackdrop";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex min-h-full flex-1 flex-col items-center justify-center bg-amber-50/80 px-6 py-16 font-sans">
-      <main className="w-full max-w-lg rounded-3xl border-4 border-amber-200 bg-white p-10 text-center shadow-[8px_8px_0_0_rgba(251,191,36,0.35)]">
+    <div className="relative flex min-h-dvh flex-1 flex-col items-center justify-center overflow-hidden bg-amber-50 px-6 py-16 font-sans">
+      <ZooCityBeginBackdrop placement="hero" />
+      <main className="relative z-10 w-full max-w-lg rounded-3xl border-4 border-amber-200/90 bg-white/75 p-10 text-center shadow-[8px_8px_0_0_rgba(251,191,36,0.35)] backdrop-blur-md backdrop-saturate-150">
         <h1 className="font-serif text-3xl font-bold text-amber-950">
           AI Zoo City
         </h1>

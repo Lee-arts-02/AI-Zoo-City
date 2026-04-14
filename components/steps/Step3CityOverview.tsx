@@ -7,12 +7,16 @@ export type Step3CityOverviewProps = {
   onSelectDistrict: (id: DistrictId) => void;
   onOpenSortingMachine: () => void;
   machineReady: boolean;
+  sortingMachineBlocked: boolean;
+  sortingMachineBlockedReason?: string;
 };
 
 export default function Step3CityOverview({
   onSelectDistrict,
   onOpenSortingMachine,
   machineReady,
+  sortingMachineBlocked,
+  sortingMachineBlockedReason,
 }: Step3CityOverviewProps) {
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col gap-3 sm:gap-4">
@@ -34,10 +38,19 @@ export default function Step3CityOverview({
         <button
           type="button"
           onClick={onOpenSortingMachine}
-          className="mt-4 min-h-[48px] rounded-2xl border-2 border-violet-700 bg-violet-500 px-6 py-3 font-serif text-lg font-semibold text-white shadow-[4px_4px_0_0_rgba(91,33,182,0.35)] transition enabled:hover:translate-y-px enabled:hover:bg-violet-400"
+          disabled={sortingMachineBlocked}
+          title={sortingMachineBlocked ? sortingMachineBlockedReason : undefined}
+          className="mt-4 min-h-[48px] rounded-2xl border-2 border-violet-700 bg-violet-500 px-6 py-3 font-serif text-lg font-semibold text-white shadow-[4px_4px_0_0_rgba(91,33,182,0.35)] transition enabled:hover:translate-y-px enabled:hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-45"
         >
           {machineReady ? "Return to City Sorting Machine" : "Open City Sorting Machine"}
         </button>
+        {sortingMachineBlocked ? (
+          <p className="mt-3 text-sm leading-snug text-amber-900/90">
+            Tip: use the teal <span className="font-semibold">Open sorting space</span> button,
+            visit three districts, then unlock “View more from the current Zoo City” before this
+            button turns on.
+          </p>
+        ) : null}
       </div>
     </div>
   );

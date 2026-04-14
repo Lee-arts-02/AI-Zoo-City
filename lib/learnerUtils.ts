@@ -11,9 +11,9 @@ export const PRESET_ANIMALS: {
   { id: "bear", label: "Bear", emoji: "🐻" },
   { id: "elephant", label: "Elephant", emoji: "🐘" },
   { id: "deer", label: "Deer", emoji: "🦌" },
-  { id: "owl", label: "Owl", emoji: "🦉" },
-  { id: "beaver", label: "Beaver", emoji: "🦫" },
   { id: "lion", label: "Lion", emoji: "🦁" },
+  { id: "cat", label: "Cat", emoji: "🐱" },
+  { id: "sheep", label: "Sheep", emoji: "🐑" },
 ];
 
 export const SUGGESTED_TRAITS = [

@@ -581,17 +581,13 @@ export function Step7Reflection() {
                   Zoo City Co-Designer
                 </h3>
                 <div className="mt-4 flex justify-center">
-                  <div className="h-16 w-28 overflow-hidden rounded-lg border border-amber-900/15 bg-stone-200/80">
-                    {afterSrc ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={afterSrc}
-                        alt=""
-                        className="h-full w-full object-cover opacity-80"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-stone-300 to-amber-200/80" />
-                    )}
+                  <div className="h-20 w-36 overflow-hidden rounded-lg border border-amber-900/15 bg-stone-200/80 sm:h-24 sm:w-44">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/zoo-city-begin.png"
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 </div>
                 <p className="mt-4 text-center font-serif text-sm text-amber-900/80">
@@ -682,23 +678,19 @@ export function Step7Reflection() {
             <div className="fixed left-[-9999px] top-0 overflow-hidden">
               <div
                 ref={exportRef}
-                className="flex flex-col items-center bg-[#f4f0e8] p-10"
+                className="relative flex flex-col items-center overflow-hidden bg-amber-50 p-10"
                 style={{ width: 900, minHeight: 1200 }}
               >
                 <div
-                  className="pointer-events-none absolute inset-0 opacity-25"
+                  className="pointer-events-none absolute inset-0 opacity-[0.14]"
                   aria-hidden
                 >
-                  {afterSrc ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={afterSrc}
-                      alt=""
-                      className="h-full w-full object-cover blur-[2px]"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-amber-200/90 to-stone-300/80" />
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/zoo-city-begin.png"
+                    alt=""
+                    className="h-full w-full object-cover blur-[1.5px]"
+                  />
                 </div>
                 <div className="relative z-[1] w-full max-w-[760px]">
                   <p className="text-center font-serif text-sm font-medium uppercase tracking-widest text-amber-900/70">

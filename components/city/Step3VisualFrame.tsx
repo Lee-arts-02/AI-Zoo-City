@@ -33,7 +33,9 @@ export function Step3VisualFrame({
       <div className={`relative w-full ${STEP3_ARTWORK_MAX_W_CLASS}`}>
         <div className="relative w-full leading-none">
           {image}
-          {overlay ? <div className="absolute inset-0 z-[2]">{overlay}</div> : null}
+          {overlay ? (
+            <div className="absolute inset-0 z-[2] pointer-events-none">{overlay}</div>
+          ) : null}
         </div>
 
         {aside ? (

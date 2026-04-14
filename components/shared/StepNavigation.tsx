@@ -47,7 +47,7 @@ export function StepNavigation({ onBackFromStoryStart }: StepNavigationProps) {
         disabled={!canGoNext}
         title={
           step3NeedsMachine
-            ? "Open the City Sorting Machine from the map on step 3 to continue."
+            ? "On step 3: finish the teal sorting space (3 districts + city reveal), open the City Sorting Machine from the map, then you can continue."
             : step5NeedsRedesign
               ? "Tap Save My New City on Chapter 5 to continue."
               : step5Celebration

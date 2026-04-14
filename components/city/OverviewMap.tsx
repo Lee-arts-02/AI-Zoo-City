@@ -38,7 +38,7 @@ export default function OverviewMap({ onSelectDistrict }: OverviewMapProps) {
                 key={d.id}
                 type="button"
                 onClick={() => onSelectDistrict(d.id)}
-                className="group absolute cursor-pointer rounded-2xl border-2 border-white/30 bg-white/5 outline-none ring-amber-900/0 transition-all duration-200 hover:border-amber-400/90 hover:bg-amber-200/25 hover:ring-2 hover:ring-amber-500/40 focus-visible:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-600"
+                className="pointer-events-auto group absolute cursor-pointer rounded-2xl border-2 border-white/30 bg-white/5 outline-none ring-amber-900/0 transition-all duration-200 hover:border-amber-400/90 hover:bg-amber-200/25 hover:ring-2 hover:ring-amber-500/40 focus-visible:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-600"
                 style={{
                   left: `${r.left}%`,
                   top: `${r.top}%`,

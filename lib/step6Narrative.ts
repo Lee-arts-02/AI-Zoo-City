@@ -108,7 +108,10 @@ export function buildStep6Content(
     });
   }
 
-  if (aiAway >= 5) {
+  const severalAiDisagree = Math.max(5, Math.ceil(total * 0.31));
+  const manyAiFollow = Math.max(7, Math.ceil(total * 0.44));
+
+  if (aiAway >= severalAiDisagree) {
     cards.push({
       label: "AI Agreement",
       body: "You chose differently from the system's strongest pattern for several animals.",
@@ -118,7 +121,7 @@ export function buildStep6Content(
       label: "AI Agreement",
       body: `You changed ${aiAway} of the system's suggestions.`,
     });
-  } else if (aiFollow >= 7) {
+  } else if (aiFollow >= manyAiFollow) {
     cards.push({
       label: "AI Agreement",
       body: "You often kept the system's suggestions in mind.",
