@@ -25,7 +25,7 @@ export const ZOO_CITY_ANIMAL_IDS = [
 export type ZooCityAnimalId = (typeof ZOO_CITY_ANIMAL_IDS)[number];
 
 export const animalAssets: Record<ZooCityAnimalId, { label: string; image: string }> = {
-  rabbit: { label: "Rabbit", image: "/animals/Rabbit.png" },
+  rabbit: { label: "Rabbit", image: "/animals/Rabbit1.png" },
   hedgehog: { label: "Hedgehog", image: "/animals/Hedgehog.png" },
   capybara: { label: "Capybara", image: "/animals/Capybara.png" },
   squirrel: { label: "Squirrel", image: "/animals/Squirrel.png" },
