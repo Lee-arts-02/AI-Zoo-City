@@ -33,7 +33,12 @@ export function ZooCityClient() {
   if (step === 1) {
     return (
       <IntroLayout>
-        <Step1Welcome onEnterAISystem={() => setStep(2)} />
+        <Step1Welcome
+          onEnterAISystem={() => {
+            dispatch({ type: "SET_STEP", step: 2 });
+            setStep(2);
+          }}
+        />
       </IntroLayout>
     );
   }

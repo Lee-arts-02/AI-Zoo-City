@@ -131,3 +131,236 @@ body {
 .step6-page-enter {
   animation: step6-page-enter 0.85s ease-out forwards;
 }
+
+@keyframes home-robot-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-home-robot-enter {
+  animation: home-robot-enter 1s ease-out forwards;
+}
+
+@keyframes step4-scaffold-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-step4-scaffold-in {
+  animation: step4-scaffold-in 0.45s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step4-scaffold-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes step3-open-box-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 12px rgba(139, 92, 246, 0.55),
+      0 0 28px rgba(167, 139, 250, 0.35);
+    filter: brightness(1.02);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(167, 139, 250, 0.75),
+      0 0 44px rgba(196, 181, 253, 0.45);
+    filter: brightness(1.08);
+  }
+}
+
+.animate-step3-open-box {
+  animation: step3-open-box-glow 2.2s ease-in-out infinite;
+}
+
+@keyframes step3-next-hint-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(5px);
+    opacity: 0.95;
+  }
+}
+
+.animate-step3-next-hint {
+  animation: step3-next-hint-bob 1.85s ease-in-out infinite;
+}
+
+@keyframes step3-gate-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+.animate-step3-gate-nudge {
+  animation: step3-gate-nudge 0.45s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step3-gate-nudge {
+    animation: none;
+  }
+}
+
+@keyframes step4-scaffold-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-step4-scaffold-in {
+  animation: step4-scaffold-in 0.45s ease-out forwards;
+}
+
+@keyframes step4-dossier-scan {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(420%);
+    opacity: 0.15;
+  }
+}
+
+.animate-step4-dossier-scan {
+  animation: step4-dossier-scan 4s linear infinite;
+}
+
+@keyframes step4-dossier-row {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-step4-dossier-row {
+  animation: step4-dossier-row 0.7s ease-out both;
+}
+
+@keyframes step4-one-clue-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.95));
+  }
+}
+
+.animate-step4-one-clue-pulse {
+  animation: step4-one-clue-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes step7-queue {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-step7-queue {
+  animation: step7-queue 14s linear infinite;
+}
+
+@keyframes step7-flow-pop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-18px) scale(1.08);
+    opacity: 1;
+  }
+}
+
+.animate-step7-flow-pop {
+  animation: step7-flow-pop 2.4s ease-in-out infinite;
+}
+
+@keyframes step4-pred-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes step4-pred-top-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/** Step 7 draw screen — robot under dialogue bubble */
+@keyframes step7-draw-robot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-step7-draw-robot-float {
+  animation: step7-draw-robot-float 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step7-draw-robot-float {
+    animation: none;
+  }
+}

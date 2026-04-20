@@ -1,7 +1,7 @@
 import { cityDistribution } from "@/data/cityDistribution";
 import { STEP5_ANIMALS } from "@/data/step5Animals";
 import { jobToRegionId, topAiJob } from "@/lib/step5Layout";
-import type { DistrictId, RedesignRegionId } from "@/types/city";
+import type { DistrictId } from "@/types/city";
 import type { JobId } from "@/types/game";
 
 const DISTRICTS: DistrictId[] = ["artist", "engineer", "manager", "community"];
@@ -31,9 +31,9 @@ export function originalDistrictForAnimal(
   return best;
 }
 
-/** Full map for Step 5 open — every story animal starts in its Step 3–biased district (not Freelancer Hub). */
-export function buildInitialStep5Placements(): Record<string, RedesignRegionId> {
-  const out: Record<string, RedesignRegionId> = {};
+/** Full map for Step 5 open — every story animal starts in its Step 3–biased district. */
+export function buildInitialStep5Placements(): Record<string, DistrictId> {
+  const out: Record<string, DistrictId> = {};
   for (const a of STEP5_ANIMALS) {
     out[a.id] = originalDistrictForAnimal(a.id, a.aiRecommendation);
   }

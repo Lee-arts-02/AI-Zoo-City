@@ -1,48 +1,27 @@
 /**
- * Original Zoo City — canonical animal keys (lowercase singular) and image paths.
- * Paths match files in public/animals/ exactly (Capitalized.png).
+ * Zoo City — animal keys, display labels, images, and emoji (from `zooAnimalDataset`).
  */
 
-export const ZOO_CITY_ANIMAL_IDS = [
-  "rabbit",
-  "hedgehog",
-  "capybara",
-  "squirrel",
-  "fox",
-  "chameleon",
-  "cat",
-  "otter",
-  "bear",
-  "lion",
-  "wolf",
-  "tiger",
-  "deer",
-  "sheep",
-  "elephant",
-  "zebra",
-] as const;
+import {
+  type ZooCityAnimalKey,
+  ZOO_ANIMAL_DATA,
+} from "@/data/zooAnimalDataset";
 
-export type ZooCityAnimalId = (typeof ZOO_CITY_ANIMAL_IDS)[number];
+export { ZOO_CITY_ANIMAL_IDS } from "@/data/zooAnimalDataset";
+export type { ZooCityAnimalKey };
 
-export const animalAssets: Record<ZooCityAnimalId, { label: string; image: string }> = {
-  rabbit: { label: "Rabbit", image: "/animals/Rabbit3.png" },
-  hedgehog: { label: "Hedgehog", image: "/animals/Hedgehog.png" },
-  capybara: { label: "Capybara", image: "/animals/Capybara.png" },
-  squirrel: { label: "Squirrel", image: "/animals/Squirrel.png" },
-  fox: { label: "Fox", image: "/animals/Fox3.png" },
-  chameleon: { label: "Chameleon", image: "/animals/Chameleon.png" },
-  cat: { label: "Cat", image: "/animals/Cat.png" },
-  otter: { label: "Otter", image: "/animals/Otter.png" },
-  bear: { label: "Bear", image: "/animals/Bear.png" },
-  lion: { label: "Lion", image: "/animals/Lion.png" },
-  wolf: { label: "Wolf", image: "/animals/Wolf.png" },
-  tiger: { label: "Tiger", image: "/animals/Tiger.png" },
-  deer: { label: "Deer", image: "/animals/Deer.png" },
-  sheep: { label: "Sheep", image: "/animals/Sheep.png" },
-  elephant: { label: "Elephant", image: "/animals/Elephant.png" },
-  zebra: { label: "Zebra", image: "/animals/Zebra.png" },
-};
+export type ZooCityAnimalId = ZooCityAnimalKey;
+
+export const animalAssets: Record<
+  ZooCityAnimalId,
+  { label: string; image: string; emoji: string }
+> = Object.fromEntries(
+  ZOO_ANIMAL_DATA.map((a) => [
+    a.key,
+    { label: a.label, image: a.image, emoji: a.emoji },
+  ]),
+) as Record<ZooCityAnimalId, { label: string; image: string; emoji: string }>;
 
 export function isZooCityAnimalId(s: string): s is ZooCityAnimalId {
-  return (ZOO_CITY_ANIMAL_IDS as readonly string[]).includes(s);
+  return s in animalAssets;
 }

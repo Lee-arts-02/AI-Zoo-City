@@ -13,7 +13,7 @@ export default function OrganizerColorLegend() {
       className="rounded-lg border border-stone-200/80 bg-white/60 px-2 py-1.5 text-[0.65rem] text-stone-700 shadow-sm"
       aria-label="District colors on the map"
     >
-      <p className="mb-1 font-semibold uppercase tracking-wide text-stone-600">District colors</p>
+      <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-wide text-stone-500">Colors</p>
       <ul className="grid grid-cols-2 gap-x-2 gap-y-1 sm:grid-cols-1">
         {ROWS.map((r) => (
           <li key={r.label} className="flex items-center gap-1.5">

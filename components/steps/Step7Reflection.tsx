@@ -1,28 +1,34 @@
 "use client";
 
-import { Step7DrawingCanvas } from "@/components/steps/step7/Step7DrawingCanvas";
+import { DrawingCanvas } from "@/components/DrawingCanvas";
 import {
-  CERTIFICATE_SHORT,
+  CERTIFICATE_CLOSING,
+  CERTIFICATE_PERSONALIZED,
   CHOICE_LABEL,
   REFLECTION_VARIANTS,
 } from "@/lib/step7Copy";
+import {
+  buildShareSnapshotFromGameState,
+  encodeShareSnapshot,
+} from "@/lib/shareSnapshot";
+import { titleForRetrainedPrediction } from "@/lib/predictionDisplay";
+import { buildPredictionComparisonPayload } from "@/lib/step7PredictionComparison";
 import { getAiSuggestedJob } from "@/lib/step7AiSuggest";
 import { useGameState } from "@/lib/gameState";
 import {
   DREAM_JOBS,
   extractKnownTraitsFromText,
+  formatLearnerNameForDisplay,
   getAnimalDisplayName,
   getDreamDisplayLabel,
   parseFreeTraitTokens,
   PRESET_ANIMALS,
   SUGGESTED_TRAITS,
 } from "@/lib/learnerUtils";
-import type {
-  DreamJob,
-  LearnerProfile,
-  PresetAnimal,
-  Step7CareerChoice,
-} from "@/types/game";
+import type { DreamJob, PresetAnimal, Step7CareerChoice } from "@/types/game";
+import { Step7DrawRobotPrompt } from "@/components/step7/Step7DrawRobotPrompt";
+import { Step7PredictionReveal } from "@/components/step7/Step7PredictionReveal";
+import { Step7SharePanel } from "@/components/step7/Step7SharePanel";
 import {
   useCallback,
   useEffect,
@@ -31,6 +37,7 @@ import {
   useRef,
   useState,
 } from "react";
+import QRCode from "react-qr-code";
 
 function formatTraits(traits: string[]): string {
   if (traits.length === 0) return "—";
@@ -39,38 +46,90 @@ function formatTraits(traits: string[]): string {
     .join(", ");
 }
 
-function certificateName(learner: LearnerProfile): string {
-  const raw = getAnimalDisplayName(learner);
-  if (raw === "mystery animal") return "Zoo City Friend";
-  return raw
-    .split(/\s+/)
-    .map(
-      (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
-    )
-    .join(" ");
-}
-
 function jobLabel(id: DreamJob): string {
   return DREAM_JOBS.find((j) => j.id === id)?.label ?? id;
 }
 
+/** Intro — bold “predictions”; shared by on-screen certificate and PNG export. */
+function CertificateIntroParagraph({ className }: { className?: string }) {
+  return (
+    <p className={className}>
+      You audited our AI system, learned how it makes <strong>predictions</strong>, and
+      constructed your own way to make it better.
+    </p>
+  );
+}
+
+/** “What You Discovered” — shared by on-screen certificate and PNG export; bold key terms. */
+function CertificateWhatYouDiscoveredList({ ulClassName }: { ulClassName: string }) {
+  return (
+    <ul className={ulClassName}>
+      <li>
+        The system works with small pieces called <strong>tokens</strong>
+      </li>
+      <li>
+        It makes <strong>predictions</strong> based on past patterns
+      </li>
+      <li>
+        Predictions are not final decisions, but{" "}
+        <strong>people still belong in the loop</strong>
+      </li>
+    </ul>
+  );
+}
+
+/** Match Step 1 welcome robot typing pace */
+const STEP7_PHASE1_CHAR_MS = 32;
+const STEP7_PHASE1_BETWEEN_MS = 650;
+
 export function Step7Reflection() {
   const { state, dispatch } = useGameState();
   const learner = state.learner;
-  const afterSrc = state.progress.afterCityImageDataUrl;
   const phase = state.progress.step7Phase;
   const choice = state.progress.step7CareerChoice;
   const drawingUrl = state.progress.step7DrawingDataUrl;
+  /** Final drawing: Step 7 “Done” snapshot, or Step 1 drawing as fallback. */
+  const displayDrawingUrl = drawingUrl ?? learner.drawingDataUrl;
   const reflectionKept = state.progress.step7ReflectionSentence;
 
-  const aiJobId = useMemo(() => getAiSuggestedJob(learner), [learner]);
   /** Preset or custom profession — custom text wins when filled (same as Step 1). */
   const dreamLabel = getDreamDisplayLabel(learner);
-  const aiSuggestLabel = jobLabel(aiJobId);
+
+  const predictionPayload = useMemo(
+    () => buildPredictionComparisonPayload(state),
+    [state],
+  );
+  /** “AI Suggests” uses the same retrained top role as Step 6 / prediction reveal (city + hub evidence), not the raw Step-4 token fusion. */
+  const aiSuggestLabel = useMemo(() => {
+    if (predictionPayload.predictionReady) {
+      return titleForRetrainedPrediction(predictionPayload.currentTop);
+    }
+    return jobLabel(getAiSuggestedJob(learner));
+  }, [predictionPayload, learner]);
+
+  const shareUrl = useMemo(() => {
+    const snap = buildShareSnapshotFromGameState(state, {
+      cityName: "Zoo City",
+      originalGamePath: "/zoo-city",
+    });
+    const p = encodeShareSnapshot(snap);
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/share?p=${encodeURIComponent(p)}`;
+  }, [state]);
 
   const [shuffleIx, setShuffleIx] = useState(0);
   useEffect(() => {
     if (phase === 4) setShuffleIx(0);
+  }, [phase]);
+
+  /** Re-run draw-phase typewriter when user re-enters phase 3 (e.g. 2→3 or 4→3). */
+  const [drawRobotLineKey, setDrawRobotLineKey] = useState(0);
+  const prevPhaseForDrawRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (phase === 3 && prevPhaseForDrawRef.current !== 3) {
+      setDrawRobotLineKey((k) => k + 1);
+    }
+    prevPhaseForDrawRef.current = phase;
   }, [phase]);
 
   const variants = choice ? REFLECTION_VARIANTS[choice] : [];
@@ -81,7 +140,7 @@ export function Step7Reflection() {
   const [downloadBusy, setDownloadBusy] = useState(false);
 
   const setPhase = useCallback(
-    (p: 1 | 2 | 3 | 4 | 5) => {
+    (p: 0 | 1 | 2 | 3 | 4 | 5) => {
       dispatch({ type: "MARK_PROGRESS", patch: { step7Phase: p } });
     },
     [dispatch],
@@ -94,7 +153,24 @@ export function Step7Reflection() {
     });
   };
 
+  const onDrawingChange = useCallback(
+    (dataUrl: string | null) => {
+      dispatch({ type: "SET_LEARNER", learner: { drawingDataUrl: dataUrl } });
+      if (dataUrl === null) {
+        dispatch({
+          type: "MARK_PROGRESS",
+          patch: { step7DrawingDataUrl: null },
+        });
+      }
+    },
+    [dispatch],
+  );
+
   const onDrawingDone = (dataUrl: string) => {
+    dispatch({
+      type: "SET_LEARNER",
+      learner: { drawingDataUrl: dataUrl },
+    });
     dispatch({
       type: "MARK_PROGRESS",
       patch: {
@@ -142,8 +218,10 @@ export function Step7Reflection() {
 
   const narrativeTop = useMemo(() => {
     switch (phase) {
+      case 0:
+        return "";
       case 1:
-        return "Take a breath. The city knows you — and you still get to choose.";
+        return "";
       case 2:
         return "Every path here is a mix of pattern and choice.";
       case 3:
@@ -158,8 +236,9 @@ export function Step7Reflection() {
   }, [phase]);
 
   const progressLabel = () => {
-    if (phase >= 1 && phase <= 4) return `Step ${phase} / 4`;
-    return "Complete";
+    if (phase >= 0 && phase <= 4) return `Step ${phase + 1} / 6`;
+    if (phase === 5) return "Complete";
+    return "";
   };
 
   const toggleTrait = (t: string) => {
@@ -209,6 +288,64 @@ export function Step7Reflection() {
 
   const [traitInput, setTraitInput] = useState("");
   const traitFieldId = useId();
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+
+  const formattedLearnerName = formatLearnerNameForDisplay(learner.name);
+
+  const step7Phase1Sentences = useMemo(() => {
+    const n = formattedLearnerName.trim().length > 0 ? formattedLearnerName : "friend";
+    return [
+      `Thank you so much, ${n}. How do you feel about your new Zoo City?`,
+      "Now you have a new chance to redesign your own character.",
+      'If you have new ideas, click "Small Edits" to make changes.',
+    ];
+  }, [formattedLearnerName]);
+
+  const [step7IntroIx, setStep7IntroIx] = useState(0);
+  const [step7IntroTyped, setStep7IntroTyped] = useState("");
+  const [step7IntroTyping, setStep7IntroTyping] = useState(false);
+  const step7IntroPauseRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (phase !== 1) return;
+    setStep7IntroIx(0);
+    setStep7IntroTyped("");
+    setStep7IntroTyping(false);
+  }, [phase, step7Phase1Sentences]);
+
+  useEffect(() => {
+    if (phase !== 1) return;
+    if (step7IntroIx >= step7Phase1Sentences.length) return;
+
+    const full = step7Phase1Sentences[step7IntroIx]!;
+    let i = 0;
+    setStep7IntroTyped("");
+    setStep7IntroTyping(true);
+
+    const id = window.setInterval(() => {
+      i += 1;
+      setStep7IntroTyped(full.slice(0, i));
+      if (i >= full.length) {
+        window.clearInterval(id);
+        setStep7IntroTyping(false);
+        const pauseId = window.setTimeout(() => {
+          if (step7IntroIx < step7Phase1Sentences.length - 1) {
+            setStep7IntroIx((s) => s + 1);
+          }
+        }, STEP7_PHASE1_BETWEEN_MS);
+        step7IntroPauseRef.current =
+          typeof pauseId === "number" ? pauseId : null;
+      }
+    }, STEP7_PHASE1_CHAR_MS);
+
+    return () => {
+      window.clearInterval(id);
+      const p = step7IntroPauseRef.current;
+      if (p != null) window.clearTimeout(p);
+      step7IntroPauseRef.current = null;
+    };
+  }, [phase, step7IntroIx, step7Phase1Sentences]);
 
   const addTraitsFromText = useCallback(() => {
     const fromTyping = parseFreeTraitTokens(traitInput);
@@ -236,7 +373,9 @@ export function Step7Reflection() {
       aria-labelledby="step7-title"
     >
       <p className="mb-3 text-center font-serif text-sm font-medium uppercase tracking-[0.2em] text-amber-800/75">
-        Chapter 7 — Reflection &amp; final artifact
+        {phase === 0
+          ? "Chapter 7"
+          : "Chapter 7 — Reflection and final artifact"}
       </p>
       <h2
         id="step7-title"
@@ -245,39 +384,42 @@ export function Step7Reflection() {
         Identity, choice, and career connection
       </h2>
 
-      {/* TOP: narrative */}
-      <p className="mx-auto mb-6 max-w-xl text-center font-serif text-base leading-relaxed text-amber-950/90 sm:text-lg">
-        {narrativeTop}
-      </p>
+      {/* TOP: narrative (hidden on prediction reveal — it has its own header) */}
+      {phase !== 0 && narrativeTop ? (
+        <p className="mx-auto mb-6 max-w-xl text-center font-serif text-base leading-relaxed text-amber-950/90 sm:text-lg">
+          {narrativeTop}
+        </p>
+      ) : null}
 
       {/* CENTER: single active stage */}
       <div className="relative mx-auto flex min-h-[min(60vh,520px)] w-full max-w-4xl flex-1 flex-col items-center justify-center">
+        {phase === 0 && (
+          <Step7PredictionReveal onContinue={() => setPhase(1)} />
+        )}
+
         {phase === 1 && (
           <div className="w-full max-w-lg space-y-6">
-            <div className="relative overflow-hidden rounded-3xl border border-amber-900/15 shadow-[0_20px_50px_-20px_rgba(120,53,15,0.25)]">
-              {afterSrc ? (
-                <>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- data URL */}
-                  <img
-                    src={afterSrc}
-                    alt=""
-                    className="h-48 w-full scale-105 object-cover opacity-50 blur-md"
-                    aria-hidden
-                  />
-                </>
-              ) : (
-                <div
-                  className="h-48 w-full bg-gradient-to-br from-stone-300/80 to-amber-200/60"
-                  aria-hidden
+            <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-center sm:gap-8">
+              <div className="flex shrink-0 justify-center sm:justify-start">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/robot.png"
+                  alt=""
+                  className="h-auto max-h-[180px] w-auto max-w-[min(100%,200px)] object-contain drop-shadow sm:max-h-[200px]"
                 />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-amber-950/20 to-transparent" />
-              <div className="relative px-6 py-8 text-center">
-                <p className="font-serif text-xl font-semibold text-amber-950 sm:text-2xl">
-                  Now you are part of this city.
-                </p>
-                <p className="mt-3 font-serif text-lg text-amber-950/90">
-                  Who are you here?
+              </div>
+              <div
+                className="min-w-0 flex-1 rounded-3xl border-2 border-amber-200/90 bg-amber-50/90 p-5 shadow-[6px_6px_0_0_rgba(251,191,36,0.2)] backdrop-blur-sm md:p-7"
+                aria-live="polite"
+              >
+                <p className="min-h-[4.5rem] font-serif text-base leading-relaxed text-amber-950 sm:text-lg md:min-h-[5rem] md:text-xl md:leading-relaxed">
+                  {step7IntroTyped}
+                  {step7IntroTyping ? (
+                    <span
+                      className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-amber-700 align-middle"
+                      aria-hidden
+                    />
+                  ) : null}
                 </p>
               </div>
             </div>
@@ -311,6 +453,20 @@ export function Step7Reflection() {
                   <dd className="font-semibold">{dreamLabel}</dd>
                 </div>
               </dl>
+
+              {learner.drawingDataUrl ? (
+                <div className="mt-5 border-t border-amber-900/10 pt-4">
+                  <p className="mb-2 font-serif text-xs font-medium uppercase tracking-wider text-amber-900/60">
+                    Your drawing (from Step 1)
+                  </p>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- data URL */}
+                  <img
+                    src={learner.drawingDataUrl}
+                    alt="Your character drawing from the beginning of the story"
+                    className="mx-auto max-h-40 w-full max-w-xs rounded-xl border border-amber-900/15 bg-white object-contain shadow-inner"
+                  />
+                </div>
+              ) : null}
 
               <details className="mt-5 border-t border-amber-900/10 pt-4">
                 <summary className="cursor-pointer font-serif text-sm text-amber-900/70">
@@ -536,12 +692,33 @@ export function Step7Reflection() {
         )}
 
         {phase === 3 && (
-          <div className="flex w-full max-w-3xl flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-            <Step7DrawingCanvas onDone={onDrawingDone} />
-            <div className="flex flex-1 flex-col justify-center font-serif text-amber-950/95 lg:pt-4">
-              <p className="text-lg leading-relaxed sm:text-xl">
-                Draw yourself in your Zoo City.
-              </p>
+          <div className="flex w-full max-w-6xl flex-col gap-6">
+            <p className="text-center font-serif text-sm leading-relaxed text-amber-900/85">
+              This is your drawing from earlier. You can continue or start over.
+            </p>
+            <p className="text-center font-serif text-sm italic text-amber-800/70">
+              Has your idea changed after exploring Zoo City?
+            </p>
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
+              <DrawingCanvas
+                key="step7-draw-session"
+                variant="step7"
+                initialData={learner.drawingDataUrl}
+                onChange={onDrawingChange}
+                onDone={onDrawingDone}
+              />
+              <div className="flex min-w-0 flex-1 flex-col justify-start lg:pt-1">
+                {drawRobotLineKey > 0 ? (
+                  <Step7DrawRobotPrompt
+                    lineKey={`step7-draw-${drawRobotLineKey}`}
+                  />
+                ) : (
+                  <div
+                    className="min-h-[8rem] w-full"
+                    aria-hidden
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -574,13 +751,67 @@ export function Step7Reflection() {
 
         {phase === 5 && choice && reflectionKept && (
           <div className="flex w-full max-w-3xl flex-col items-center gap-8">
-            <div className="grid w-full gap-6 lg:grid-cols-2 lg:gap-8">
-              {/* Certificate */}
-              <article className="flex flex-col rounded-2xl border-2 border-amber-900/20 bg-[#fdfbf7] p-5 shadow-sm">
-                <h3 className="text-center font-serif text-lg font-bold uppercase tracking-wide text-amber-950">
-                  Zoo City Co-Designer
-                </h3>
-                <div className="mt-4 flex justify-center">
+            <div className="w-full text-center">
+              <p className="font-serif text-2xl font-semibold leading-snug text-amber-950 sm:text-3xl">
+                {formattedLearnerName.length > 0
+                  ? `This is ${formattedLearnerName}'s Zoo City design`
+                  : "Your Zoo City design"}
+              </p>
+
+              {nameEditing ? (
+                <div className="mx-auto mt-4 flex max-w-md flex-col gap-2 sm:flex-row sm:items-center sm:justify-center">
+                  <label className="sr-only" htmlFor="step7-name-edit">
+                    Edit your name
+                  </label>
+                  <input
+                    id="step7-name-edit"
+                    type="text"
+                    value={nameDraft}
+                    onChange={(e) => setNameDraft(e.target.value.slice(0, 30))}
+                    placeholder="Enter your name"
+                    className="min-h-[44px] w-full rounded-xl border-2 border-amber-300 bg-white px-3 py-2 font-serif text-amber-950 placeholder:text-amber-800/40 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 sm:flex-1"
+                    autoComplete="name"
+                  />
+                  <div className="flex justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        dispatch({
+                          type: "SET_LEARNER",
+                          learner: { name: nameDraft.trim().slice(0, 30) },
+                        });
+                        setNameEditing(false);
+                      }}
+                      className="rounded-xl border-2 border-amber-800 bg-amber-400 px-4 py-2 font-serif text-sm font-semibold text-amber-950 hover:bg-amber-300"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNameEditing(false)}
+                      className="rounded-xl border border-amber-900/25 bg-white px-4 py-2 font-serif text-sm font-medium text-amber-950 hover:bg-amber-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNameDraft(learner.name);
+                    setNameEditing(true);
+                  }}
+                  className="mt-3 font-serif text-sm font-medium text-amber-800 underline decoration-amber-800/40 underline-offset-2 hover:text-amber-950"
+                >
+                  Edit name
+                </button>
+              )}
+            </div>
+
+            <div className="flex w-full max-w-2xl flex-col">
+              <article className="flex flex-col overflow-hidden rounded-2xl border-2 border-amber-900/20 bg-[#fdfbf7] p-5 shadow-sm">
+                <div className="flex justify-center">
                   <div className="h-20 w-36 overflow-hidden rounded-lg border border-amber-900/15 bg-stone-200/80 sm:h-24 sm:w-44">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -590,20 +821,25 @@ export function Step7Reflection() {
                     />
                   </div>
                 </div>
-                <p className="mt-4 text-center font-serif text-sm text-amber-900/80">
-                  This certifies that
+                <p className="mt-4 text-center font-serif text-lg font-semibold leading-snug text-amber-950 sm:text-xl">
+                  🎉 {formattedLearnerName.length > 0 ? formattedLearnerName : "Friend"}, Congratulations! 🎉
                 </p>
-                <p className="mt-2 text-center font-serif text-2xl font-semibold text-amber-950">
-                  {certificateName(learner)}
+                <p className="mt-2 text-center font-serif text-base font-semibold text-amber-950/95">
+                  You&apos;ve Completed Your Zoo City Journey
                 </p>
-                <p className="mx-auto mt-4 max-w-[14rem] text-center font-serif text-sm leading-relaxed text-amber-950/90">
-                  has redesigned Zoo City making decisions together with AI and
-                  creating new possibilities.
-                </p>
-                <dl className="mt-5 space-y-1 border-t border-amber-900/10 pt-4 font-serif text-sm text-amber-950">
+                <CertificateIntroParagraph className="mx-auto mt-4 max-w-prose text-center font-serif text-sm leading-relaxed text-amber-950/90" />
+                {displayDrawingUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={displayDrawingUrl}
+                    alt="Your character"
+                    className="mx-auto mt-4 max-h-48 w-auto max-w-full rounded-xl border border-amber-900/12 object-contain"
+                  />
+                ) : null}
+                <dl className="mt-4 space-y-1.5 border-t border-amber-900/10 pt-4 font-serif text-sm text-amber-950">
                   <div className="flex justify-between gap-2">
                     <dt className="text-amber-800/75">Animal</dt>
-                    <dd className="font-medium">
+                    <dd className="text-right font-medium">
                       {getAnimalDisplayName(learner)
                         .split(/\s+/)
                         .map(
@@ -615,38 +851,8 @@ export function Step7Reflection() {
                     </dd>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <dt className="text-amber-800/75">Choice</dt>
-                    <dd className="text-right font-medium">
-                      {CHOICE_LABEL[choice]}
-                    </dd>
-                  </div>
-                </dl>
-                <p className="mt-4 text-center font-serif text-sm italic text-amber-900/85">
-                  “{CERTIFICATE_SHORT[choice]}”
-                </p>
-              </article>
-
-              {/* Career card */}
-              <article className="flex flex-col overflow-hidden rounded-2xl border-2 border-amber-900/20 bg-white p-5 shadow-sm">
-                <h3 className="text-center font-serif text-lg font-bold text-amber-950">
-                  Your Path in Zoo City
-                </h3>
-                {drawingUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={drawingUrl}
-                    alt="Your drawing"
-                    className="mx-auto mt-4 max-h-56 w-auto max-w-full rounded-xl border border-amber-900/10 object-contain"
-                  />
-                ) : null}
-                <dl className="mt-4 space-y-2 font-serif text-sm text-amber-950">
-                  <div className="flex justify-between gap-2">
                     <dt className="text-amber-800/75">Dream</dt>
-                    <dd className="font-medium">{dreamLabel}</dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-amber-800/75">AI Suggests</dt>
-                    <dd className="font-medium">{aiSuggestLabel}</dd>
+                    <dd className="text-right font-medium">{dreamLabel}</dd>
                   </div>
                   <div className="flex justify-between gap-2">
                     <dt className="text-amber-800/75">Your Choice</dt>
@@ -655,13 +861,62 @@ export function Step7Reflection() {
                     </dd>
                   </div>
                 </dl>
-                <p className="mt-4 border-t border-amber-900/10 pt-4 font-serif text-sm leading-relaxed text-amber-950/95">
-                  {reflectionKept}
+                <p className="mt-4 text-center font-serif text-sm font-medium leading-relaxed text-amber-950/95">
+                  {CERTIFICATE_PERSONALIZED[choice]}
                 </p>
-                <p className="mt-4 font-serif text-sm leading-relaxed text-amber-900/85">
-                  In real life, systems can suggest paths, but people make
-                  decisions.
+                <div className="mt-5 border-t border-amber-900/10 pt-4">
+                  <p className="text-center font-serif text-sm font-bold text-amber-950">
+                    What You Discovered
+                  </p>
+                  <CertificateWhatYouDiscoveredList ulClassName="mx-auto mt-2 max-w-prose list-inside list-disc space-y-1 font-serif text-sm leading-relaxed text-amber-950/90" />
+                </div>
+                <p className="mt-4 text-center font-serif text-sm italic text-amber-900/90">
+                  “{CERTIFICATE_CLOSING[choice]}”
                 </p>
+
+                <div className="mt-8 border-t border-amber-900/15 bg-white/60 px-1 py-6 sm:px-2">
+                  <h3 className="text-center font-serif text-lg font-bold text-amber-950">
+                    Your Path in Zoo City
+                  </h3>
+                  <dl className="mt-4 space-y-2 font-serif text-sm text-amber-950">
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-amber-800/75">Dream</dt>
+                      <dd className="font-medium">{dreamLabel}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-amber-800/75">AI Suggests</dt>
+                      <dd className="font-medium">{aiSuggestLabel}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-amber-800/75">Your Choice</dt>
+                      <dd className="text-right font-medium">
+                        {CHOICE_LABEL[choice]}
+                      </dd>
+                    </div>
+                  </dl>
+                  <p className="mt-4 border-t border-amber-900/10 pt-4 font-serif text-sm leading-relaxed text-amber-950/95">
+                    {reflectionKept}
+                  </p>
+                  <p className="mt-4 font-serif text-sm leading-relaxed text-amber-900/85">
+                    In real life, systems can suggest paths, but people make
+                    decisions.
+                  </p>
+                </div>
+
+                <div className="mt-6 flex flex-col items-center border-t border-amber-900/10 pt-5">
+                  <div className="rounded-lg bg-white p-2 ring-1 ring-stone-200/80">
+                    {shareUrl ? (
+                      <QRCode value={shareUrl} size={112} level="M" className="h-auto w-full" />
+                    ) : (
+                      <div className="flex h-[112px] w-[112px] items-center justify-center font-serif text-xs text-amber-800/60">
+                        …
+                      </div>
+                    )}
+                  </div>
+                  <p className="mx-auto mt-2 text-center font-serif text-xs text-amber-800/75">
+                    Scan to open your share link.
+                  </p>
+                </div>
               </article>
             </div>
 
@@ -674,12 +929,14 @@ export function Step7Reflection() {
               {downloadBusy ? "Preparing…" : "Download My City Identity"}
             </button>
 
+            <Step7SharePanel />
+
             {/* Off-screen export (single PNG) */}
             <div className="fixed left-[-9999px] top-0 overflow-hidden">
               <div
                 ref={exportRef}
                 className="relative flex flex-col items-center overflow-hidden bg-amber-50 p-10"
-                style={{ width: 900, minHeight: 1200 }}
+                style={{ width: 900, minHeight: 1500 }}
               >
                 <div
                   className="pointer-events-none absolute inset-0 opacity-[0.14]"
@@ -692,23 +949,24 @@ export function Step7Reflection() {
                     className="h-full w-full object-cover blur-[1.5px]"
                   />
                 </div>
-                <div className="relative z-[1] w-full max-w-[760px]">
-                  <p className="text-center font-serif text-sm font-medium uppercase tracking-widest text-amber-900/70">
-                    My Zoo City Identity
+                <div className="relative z-[1] w-full max-w-[760px] px-2 font-serif text-amber-950">
+                  <p className="text-center text-2xl font-semibold leading-snug sm:text-3xl">
+                    🎉 {formattedLearnerName.length > 0 ? formattedLearnerName : "Friend"}, Congratulations! 🎉
                   </p>
-                  {drawingUrl ? (
+                  <p className="mt-3 text-center text-xl font-semibold">
+                    You&apos;ve Completed Your Zoo City Journey
+                  </p>
+                  <CertificateIntroParagraph className="mx-auto mt-5 max-w-xl text-center text-lg leading-relaxed" />
+                  {displayDrawingUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={drawingUrl}
+                      src={displayDrawingUrl}
                       alt=""
-                      className="mx-auto mt-6 max-h-[420px] w-auto rounded-2xl border-4 border-white shadow-lg"
+                      className="mx-auto mt-8 max-h-[380px] w-auto rounded-2xl border-4 border-white shadow-lg"
                     />
                   ) : null}
-                  <div className="mt-8 rounded-2xl border border-amber-900/15 bg-white/95 p-6 font-serif text-amber-950 shadow-sm">
-                    <p className="text-center text-sm text-amber-800/80">
-                      {certificateName(learner)}
-                    </p>
-                    <p className="mt-2 text-center text-lg">
+                  <div className="mx-auto mt-8 max-w-xl rounded-2xl border border-amber-900/15 bg-white/95 p-6 shadow-sm">
+                    <p className="text-center text-lg">
                       <span className="font-semibold">Animal:</span>{" "}
                       {getAnimalDisplayName(learner)
                         .split(/\s+/)
@@ -719,24 +977,65 @@ export function Step7Reflection() {
                         )
                         .join(" ")}
                     </p>
-                    <p className="mt-1 text-center text-lg">
+                    <p className="mt-2 text-center text-lg">
                       <span className="font-semibold">Dream:</span> {dreamLabel}
                     </p>
-                    <p className="mt-1 text-center text-lg">
-                      <span className="font-semibold">Choice:</span>{" "}
+                    <p className="mt-2 text-center text-lg">
+                      <span className="font-semibold">Your Choice:</span>{" "}
                       {CHOICE_LABEL[choice]}
                     </p>
-                    <p className="mt-4 text-center text-base leading-relaxed">
-                      {reflectionKept}
-                    </p>
-                    <p className="mt-4 text-center text-sm italic text-amber-900/85">
-                      “{CERTIFICATE_SHORT[choice]}”
+                    <p className="mt-5 text-center text-lg font-medium leading-relaxed">
+                      {CERTIFICATE_PERSONALIZED[choice]}
                     </p>
                   </div>
-                  <p className="mt-8 text-center font-serif text-sm leading-relaxed text-amber-900/90">
-                    In real life, systems can suggest paths, but people make
-                    decisions.
+                  <div className="mx-auto mt-8 max-w-xl rounded-2xl border border-amber-900/12 bg-white/90 p-6 shadow-sm">
+                    <p className="text-center text-xl font-bold">What You Discovered</p>
+                    <CertificateWhatYouDiscoveredList ulClassName="mx-auto mt-3 max-w-lg list-inside list-disc space-y-2 text-lg leading-relaxed" />
+                  </div>
+                  <p className="mx-auto mt-8 max-w-xl text-center text-xl italic leading-relaxed text-amber-900/95">
+                    “{CERTIFICATE_CLOSING[choice]}”
                   </p>
+
+                  <div className="mx-auto mt-10 w-full max-w-xl rounded-2xl border border-amber-900/12 bg-white/90 p-6 text-left shadow-sm">
+                    <p className="text-center text-xl font-bold text-amber-950">
+                      Your Path in Zoo City
+                    </p>
+                    <dl className="mt-4 space-y-2 text-lg">
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-amber-800/80">Dream</dt>
+                        <dd className="font-medium">{dreamLabel}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-amber-800/80">AI Suggests</dt>
+                        <dd className="font-medium">{aiSuggestLabel}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-amber-800/80">Your Choice</dt>
+                        <dd className="text-right font-medium">{CHOICE_LABEL[choice]}</dd>
+                      </div>
+                    </dl>
+                    <p className="mt-4 border-t border-amber-900/10 pt-4 leading-relaxed text-amber-950/95">
+                      {reflectionKept}
+                    </p>
+                    <p className="mt-4 leading-relaxed text-amber-900/85">
+                      In real life, systems can suggest paths, but people make decisions.
+                    </p>
+                  </div>
+
+                  <div className="mx-auto mt-10 flex w-full max-w-xl flex-col items-center">
+                    <div className="rounded-xl bg-white p-3 ring-2 ring-amber-900/10">
+                      {shareUrl ? (
+                        <QRCode value={shareUrl} size={160} level="M" />
+                      ) : (
+                        <div className="flex h-[160px] w-[160px] items-center justify-center text-sm text-amber-800/60">
+                          …
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-3 text-center text-sm text-amber-800/80">
+                      Scan to open your share link.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

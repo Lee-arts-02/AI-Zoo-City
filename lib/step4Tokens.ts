@@ -1,39 +1,29 @@
-import type { DreamJob, JobId, LearnerProfile } from "@/types/game";
+import type { JobId, LearnerProfile } from "@/types/game";
+import { normalizeTraitForModel } from "@/data/modelTraits";
 import {
   getAnimalDisplayName,
-  getDreamDisplayLabel,
-  getEffectiveDreamJob,
+  getResolvedAnimalKey,
 } from "@/lib/learnerUtils";
 import { animalPrior, customAnimalPrior } from "@/lib/aiModel";
 
-export type Step4TokenKind = "animal" | "trait" | "dream";
+export type Step4TokenKind = "animal" | "trait";
 
 export type Step4Token = {
   id: string;
   label: string;
   kind: Step4TokenKind;
-  /** Model lookup: preset id, trait key, or job id for dream */
+  /** Model lookup: canonical animal key or trait key */
   modelKey: string;
 };
 
-const DREAM_LABEL: Record<DreamJob, string> = {
-  artist: "artist",
-  engineer: "engineer",
-  manager: "manager",
-  community: "community",
-};
-
 /**
- * Key tokens for the simplified machine: animal, up to two traits, dream role.
- * Matches the pedagogy (e.g. fox | clever | artist) while staying data-driven.
+ * Machine key tokens: one animal + one token per learner-selected trait (Step 1 allows up to 3).
  */
 export function buildStep4Tokens(learner: LearnerProfile): Step4Token[] {
   const animalName = getAnimalDisplayName(learner);
-  const preset = learner.presetAnimal;
-  const isCustom =
-    learner.customAnimal.trim().length > 0 && learner.presetAnimal === null;
+  const key = getResolvedAnimalKey(learner);
   const modelAnimal =
-    !isCustom && preset && animalPrior[preset] ? preset : "custom";
+    key && animalPrior[key] ? key : "custom";
 
   const out: Step4Token[] = [
     {
@@ -44,28 +34,14 @@ export function buildStep4Tokens(learner: LearnerProfile): Step4Token[] {
     },
   ];
 
-  const traits = learner.traits.slice(0, 2);
+  const traits = learner.traits.slice(0, 3);
   for (let i = 0; i < traits.length; i++) {
     const t = traits[i];
+    const modelKey = normalizeTraitForModel(t) ?? t.trim().toLowerCase();
     out.push({
       id: `tok-trait-${i}-${t}`,
       label: t,
       kind: "trait",
-      modelKey: t,
-    });
-  }
-
-  const hasPresetDream = learner.dreamJob !== null;
-  const hasCustomDream = learner.customDreamJob.trim().length > 0;
-  if (hasPresetDream || hasCustomDream) {
-    const modelKey = getEffectiveDreamJob(learner);
-    const label = hasCustomDream
-      ? getDreamDisplayLabel(learner).toLowerCase()
-      : DREAM_LABEL[learner.dreamJob!];
-    out.push({
-      id: "tok-dream",
-      label,
-      kind: "dream",
       modelKey,
     });
   }
@@ -74,10 +50,8 @@ export function buildStep4Tokens(learner: LearnerProfile): Step4Token[] {
 }
 
 export function animalModelKeyForLearner(learner: LearnerProfile): string {
-  const isCustom =
-    learner.customAnimal.trim().length > 0 && learner.presetAnimal === null;
-  const preset = learner.presetAnimal;
-  if (!isCustom && preset && animalPrior[preset]) return preset;
+  const k = getResolvedAnimalKey(learner);
+  if (k && animalPrior[k]) return k;
   return "custom";
 }
 

@@ -1,6 +1,15 @@
-import { traitWeights } from "@/lib/aiModel";
+import {
+  getZooAnimalEntry,
+  resolveZooAnimalInput,
+} from "@/data/zooAnimalDataset";
+import {
+  traitWeights,
+  traitsForModel,
+  TRAIT_SYNONYMS,
+} from "@/data/modelTraits";
 import type { DreamJob, LearnerProfile, PresetAnimal } from "@/types/game";
 
+/** Step 1 quick-pick grid — subset of the full dataset (see `data/zooAnimalDataset.ts`). */
 export const PRESET_ANIMALS: {
   id: PresetAnimal;
   label: string;
@@ -54,7 +63,7 @@ function dreamJobPhrase(job: DreamJob): string {
 }
 
 /**
- * Preset job id for the AI model when the learner chose a custom dream string.
+ * Preset job id for narrative / comparison when the learner chose a custom dream string.
  * Maps keywords to the nearest category; defaults to artist.
  */
 export function getEffectiveDreamJob(learner: LearnerProfile): DreamJob {
@@ -88,13 +97,42 @@ export function getDreamDisplayLabel(learner: LearnerProfile): string {
   return "—";
 }
 
+/** Title-style formatting for a learner-entered name (words, light capitalization). */
+export function formatLearnerNameForDisplay(raw: string): string {
+  const t = raw.trim();
+  if (!t) return "";
+  return t
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+/**
+ * Canonical animal key when the learner picked a supported species (grid or typed).
+ */
+export function getResolvedAnimalKey(
+  learner: LearnerProfile,
+): PresetAnimal | null {
+  if (learner.presetAnimal) return learner.presetAnimal;
+  const r = resolveZooAnimalInput(learner.customAnimal.trim());
+  return r ? (r.key as PresetAnimal) : null;
+}
+
+/** Emoji for the learner’s animal when known (Step 1 card, etc.). */
+export function getAnimalEmojiForLearner(learner: LearnerProfile): string {
+  const key = getResolvedAnimalKey(learner);
+  if (!key) return "✨";
+  return getZooAnimalEntry(key)?.emoji ?? "✨";
+}
+
 export function getAnimalDisplayName(learner: LearnerProfile): string {
-  const custom = learner.customAnimal.trim();
-  if (custom.length > 0) return custom;
-  if (learner.presetAnimal) {
-    const row = PRESET_ANIMALS.find((a) => a.id === learner.presetAnimal);
-    return row ? row.label.toLowerCase() : "animal";
+  const key = getResolvedAnimalKey(learner);
+  if (key) {
+    const entry = getZooAnimalEntry(key);
+    return (entry?.label ?? key).toLowerCase();
   }
+  const custom = learner.customAnimal.trim();
+  if (custom.length > 0) return custom.toLowerCase();
   return "mystery animal";
 }
 
@@ -121,8 +159,7 @@ export function buildLearnerDescription(learner: LearnerProfile): string {
 }
 
 export function isLearnerProfileComplete(learner: LearnerProfile): boolean {
-  const hasAnimal =
-    learner.presetAnimal !== null || learner.customAnimal.trim().length > 0;
+  const hasAnimal = getResolvedAnimalKey(learner) !== null;
   const hasDream =
     learner.dreamJob !== null || learner.customDreamJob.trim().length > 0;
   const hasTrait = learner.traits.length >= 1;
@@ -136,6 +173,11 @@ export function extractKnownTraitsFromText(text: string): string[] {
   for (const key of KNOWN_TRAIT_KEYS) {
     const re = new RegExp(`\\b${escapeRe(key)}\\b`, "i");
     if (re.test(lower)) found.push(key);
+  }
+  for (const [syn, canon] of Object.entries(TRAIT_SYNONYMS)) {
+    if (found.includes(canon)) continue;
+    const re = new RegExp(`\\b${escapeRe(syn)}\\b`, "i");
+    if (re.test(lower)) found.push(canon);
   }
   return [...new Set(found)];
 }
@@ -160,7 +202,7 @@ const TRAIT_STOPWORDS = new Set([
 
 /**
  * Tokens from free-typed trait text for display (and state), lowercased.
- * Unknown words are kept for the card; the AI model still ignores them.
+ * Unknown words are kept for the card; the model maps known ones through the trait lexicon.
  */
 export function parseFreeTraitTokens(text: string): string[] {
   const raw = text
@@ -168,6 +210,11 @@ export function parseFreeTraitTokens(text: string): string[] {
     .map((s) => s.trim().toLowerCase())
     .filter((s) => s.length > 0 && !TRAIT_STOPWORDS.has(s));
   return [...new Set(raw)];
+}
+
+/** Canonical trait keys for the AI model (animal + traits only). */
+export function traitsNormalizedForModel(learner: LearnerProfile): string[] {
+  return traitsForModel(learner.traits);
 }
 
 function escapeRe(s: string): string {

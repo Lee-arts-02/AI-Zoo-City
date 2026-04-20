@@ -1,9 +1,12 @@
 /**
  * Deterministic job prediction: same inputs always yield the same probabilities.
- * Raw score = 0.6 * animalPrior + 0.3 * traitSignal + 0.1 * dreamSignal, then softmax.
+ * Raw score = WEIGHT_PRIOR * animalPrior + WEIGHT_TRAIT * traitSignal, then softmax.
+ * Dream job is not part of the machine signal (learner aspiration only).
  */
 
-import type { DreamJob, JobId } from "@/types/game";
+import { animalPriorFromDataset, resolveZooAnimalInput } from "@/data/zooAnimalDataset";
+import { traitWeights, traitsForModel } from "@/data/modelTraits";
+import type { JobId } from "@/types/game";
 
 export const JOB_IDS: readonly JobId[] = [
   "artist",
@@ -12,7 +15,22 @@ export const JOB_IDS: readonly JobId[] = [
   "community",
 ] as const;
 
-export const DREAM_BOOST = 0.08;
+export { traitWeights };
+
+/** Sharper priors per species — imported from the zoo dataset. */
+export const animalPrior: Record<string, Record<JobId, number>> =
+  animalPriorFromDataset;
+
+/** Uniform fallback when no known animal resolves (legacy / malformed payloads). */
+export const customAnimalPrior: Record<JobId, number> = {
+  artist: 0.25,
+  engineer: 0.25,
+  manager: 0.25,
+  community: 0.25,
+};
+
+const WEIGHT_PRIOR = 0.58;
+const WEIGHT_TRAIT = 0.42;
 
 /** Human-readable labels for UI and explanations */
 export const JOB_DISPLAY: Record<
@@ -41,80 +59,40 @@ export const JOB_DISPLAY: Record<
   },
 };
 
-export const animalPrior: Record<
-  string,
-  Record<JobId, number>
-> = {
-  rabbit: { artist: 0.42, engineer: 0.14, manager: 0.12, community: 0.32 },
-  fox: { artist: 0.14, engineer: 0.44, manager: 0.22, community: 0.2 },
-  bear: { artist: 0.1, engineer: 0.22, manager: 0.46, community: 0.22 },
-  elephant: { artist: 0.1, engineer: 0.18, manager: 0.22, community: 0.5 },
-  deer: { artist: 0.26, engineer: 0.14, manager: 0.16, community: 0.44 },
-  lion: { artist: 0.08, engineer: 0.14, manager: 0.58, community: 0.2 },
-  cat: { artist: 0.18, engineer: 0.2, manager: 0.44, community: 0.18 },
-  sheep: { artist: 0.22, engineer: 0.1, manager: 0.18, community: 0.5 },
-};
-
-/** Uniform prior for custom animals (sums to 1). */
-export const customAnimalPrior: Record<JobId, number> = {
-  artist: 0.25,
-  engineer: 0.25,
-  manager: 0.25,
-  community: 0.25,
-};
-
-export const traitWeights: Record<
-  string,
-  Record<JobId, number>
-> = {
-  creative: { artist: 0.18, engineer: 0.02, manager: 0.02, community: 0.04 },
-  clever: { artist: 0.04, engineer: 0.1, manager: 0.1, community: 0.02 },
-  helpful: { artist: 0.02, engineer: 0.03, manager: 0.03, community: 0.18 },
-  strong: { artist: 0.01, engineer: 0.08, manager: 0.08, community: 0.05 },
-  careful: { artist: 0.02, engineer: 0.12, manager: 0.04, community: 0.06 },
-  friendly: { artist: 0.05, engineer: 0.01, manager: 0.04, community: 0.12 },
-  fast: { artist: 0.02, engineer: 0.06, manager: 0.08, community: 0.04 },
-  curious: { artist: 0.05, engineer: 0.1, manager: 0.05, community: 0.02 },
-  quiet: { artist: 0.03, engineer: 0.05, manager: 0.01, community: 0.06 },
-  brave: { artist: 0.02, engineer: 0.06, manager: 0.12, community: 0.03 },
-};
-
-const WEIGHT_PRIOR = 0.6;
-const WEIGHT_TRAIT = 0.3;
-const WEIGHT_DREAM = 0.1;
-
-function getPriorForAnimal(presetKey: string | null, isCustom: boolean): Record<JobId, number> {
-  if (isCustom || !presetKey || !animalPrior[presetKey]) {
-    return customAnimalPrior;
+function effectiveAnimalKey(input: JudgmentInput): string | null {
+  const preset = input.presetAnimal?.trim() ?? "";
+  const custom = input.customAnimalTrimmed.trim();
+  if (preset && animalPrior[preset]) return preset;
+  if (preset) {
+    const r = resolveZooAnimalInput(preset);
+    if (r && animalPrior[r.key]) return r.key;
   }
-  return animalPrior[presetKey];
+  const r2 = resolveZooAnimalInput(custom);
+  if (r2 && animalPrior[r2.key]) return r2.key;
+  return null;
 }
 
-function traitSignalForJobs(traits: string[]): Record<JobId, number> {
+function getPriorForAnimalKey(animalKey: string | null): Record<JobId, number> {
+  if (animalKey && animalPrior[animalKey]) {
+    return animalPrior[animalKey];
+  }
+  return customAnimalPrior;
+}
+
+function traitSignalForJobs(traitKeys: string[]): Record<JobId, number> {
   const out: Record<JobId, number> = {
     artist: 0,
     engineer: 0,
     manager: 0,
     community: 0,
   };
-  for (const t of traits) {
+  for (const t of traitKeys) {
     const w = traitWeights[t];
     if (!w) continue;
     for (const j of JOB_IDS) {
       out[j] += w[j];
     }
   }
-  return out;
-}
-
-function dreamSignalForJobs(dreamJob: DreamJob): Record<JobId, number> {
-  const out: Record<JobId, number> = {
-    artist: 0,
-    engineer: 0,
-    manager: 0,
-    community: 0,
-  };
-  out[dreamJob] = DREAM_BOOST;
   return out;
 }
 
@@ -183,7 +161,6 @@ export type JudgmentInput = {
   presetAnimal: string | null;
   customAnimalTrimmed: string;
   traits: string[];
-  dreamJob: DreamJob;
 };
 
 export type JudgmentResult = {
@@ -194,15 +171,9 @@ export type JudgmentResult = {
 };
 
 export function computeJudgment(input: JudgmentInput): JudgmentResult {
-  const isCustom =
-    input.customAnimalTrimmed.length > 0 && input.presetAnimal === null;
-  const priorKey =
-    !isCustom && input.presetAnimal && animalPrior[input.presetAnimal]
-      ? input.presetAnimal
-      : null;
-  const prior = getPriorForAnimal(priorKey, isCustom);
-  const tSignal = traitSignalForJobs(input.traits);
-  const dSignal = dreamSignalForJobs(input.dreamJob);
+  const prior = getPriorForAnimalKey(effectiveAnimalKey(input));
+  const modelTraits = traitsForModel(input.traits);
+  const tSignal = traitSignalForJobs(modelTraits);
 
   const raw: Record<JobId, number> = {
     artist: 0,
@@ -211,10 +182,7 @@ export function computeJudgment(input: JudgmentInput): JudgmentResult {
     community: 0,
   };
   for (const j of JOB_IDS) {
-    raw[j] =
-      WEIGHT_PRIOR * prior[j] +
-      WEIGHT_TRAIT * tSignal[j] +
-      WEIGHT_DREAM * dSignal[j];
+    raw[j] = WEIGHT_PRIOR * prior[j] + WEIGHT_TRAIT * tSignal[j];
   }
 
   const probabilities = softmax(raw);

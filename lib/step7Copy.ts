@@ -39,3 +39,27 @@ export const CHOICE_LABEL: Record<Step7CareerChoice, string> = {
   own_path: "Chose my own path",
   new_path: "Created a new path",
 };
+
+/**
+ * Certificate — intro paragraph (plain text). On-screen / PNG use
+ * `CertificateIntroParagraph` in Step7Reflection with **predictions** bolded.
+ */
+export const CERTIFICATE_INTRO =
+  "You audited our AI system, learned how it makes predictions, and constructed your own way to make it better.";
+
+/** Certificate — personalized line after identity fields (by Step 7 choice). */
+export const CERTIFICATE_PERSONALIZED: Record<Step7CareerChoice, string> = {
+  follow_ai:
+    "You chose to move with the patterns the system already knows — and that choice still belongs to you.",
+  own_path:
+    "You chose to follow your own path, even when the system pointed somewhere else.",
+  new_path: "You chose to create a path the system did not imagine.",
+};
+
+/** Certificate — closing reflective line (by Step 7 choice). */
+export const CERTIFICATE_CLOSING: Record<Step7CareerChoice, string> = {
+  follow_ai:
+    "You created continuity with what came before — and you still made it yours.",
+  own_path: "You created possibilities beyond what the system expected.",
+  new_path: "You created possibilities beyond what the system expected.",
+};

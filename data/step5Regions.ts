@@ -11,10 +11,7 @@ export type Step5RegionConfig = {
   glowClass: string;
 };
 
-/**
- * Drop zones on the overview maps. Four districts match Step 3 hotspots; Freelancer Hub
- * is positioned for zoo-map2.png (same canvas % as map1 — adjust if art shifts).
- */
+/** Drop zones on the overview map — four districts + Freelancer Hub (map capture). */
 export const STEP5_REGIONS: Step5RegionConfig[] = [
   ...districtConfig.map((d) => ({
     id: d.id,
@@ -33,10 +30,10 @@ export const STEP5_REGIONS: Step5RegionConfig[] = [
   {
     id: "freelancer",
     label: "Freelancer Hub",
-    hotspot: { left: 6, top: 52, width: 20, height: 40 },
+    hotspot: { left: 18, top: 82, width: 64, height: 14 },
     accentClass:
-      "border-violet-300/80 bg-violet-200/20 shadow-[0_0_32px_rgba(167,139,250,0.55)]",
-    glowClass: "animate-step5-hub-pulse",
+      "border-violet-400/85 bg-violet-300/20 shadow-[0_0_24px_rgba(167,139,250,0.45)]",
+    glowClass: "",
   },
 ];
 

@@ -5,6 +5,7 @@ import { Step4AISystem } from "@/components/steps/Step4AISystem";
 import { Step5Redesign } from "@/components/steps/Step5Redesign";
 import { Step6Comparison } from "@/components/steps/Step6Comparison";
 import { Step7Reflection } from "@/components/steps/Step7Reflection";
+import { Step3InteractionProvider } from "@/components/steps/Step3InteractionContext";
 import { getAnimalDisplayName } from "@/lib/learnerUtils";
 import { useGameState } from "@/lib/gameState";
 import { StepNavigation } from "./StepNavigation";
@@ -56,6 +57,7 @@ export function MainStoryShell({ onBackFromStoryStart }: MainStoryShellProps) {
     step7Wide;
 
   return (
+    <Step3InteractionProvider>
     <div
       className={`mx-auto flex min-h-0 w-full flex-1 flex-col py-6 sm:py-8 ${
         wideStoryLayout
@@ -93,5 +95,6 @@ export function MainStoryShell({ onBackFromStoryStart }: MainStoryShellProps) {
         </div>
       </main>
     </div>
+    </Step3InteractionProvider>
   );
 }

@@ -13,8 +13,9 @@ import {
   getEffectiveDreamJob,
   isLearnerProfileComplete,
 } from "@/lib/learnerUtils";
+import { useAudio } from "@/lib/audio/AudioProvider";
 import { useGameState } from "@/lib/gameState";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const LOADING_MS = 2000;
 
@@ -30,6 +31,7 @@ export function Step2Judgment({
   onBackToWelcome,
   onContinueToStory,
 }: Step2JudgmentProps) {
+  const { playDecisionSfx } = useAudio();
   const { state, dispatch } = useGameState();
   const { learner } = state;
   const complete = isLearnerProfileComplete(learner);
@@ -69,14 +71,33 @@ export function Step2Judgment({
 
   const judgment = useMemo(() => {
     if (!complete) return null;
-    const dreamForModel = getEffectiveDreamJob(learner);
     return computeJudgment({
       presetAnimal: learner.presetAnimal,
       customAnimalTrimmed: learner.customAnimal.trim(),
       traits: learner.traits,
-      dreamJob: dreamForModel,
     });
   }, [complete, learner]);
+
+  const dreamJobId = useMemo(
+    () => getEffectiveDreamJob(learner),
+    [learner],
+  );
+
+  const approved = useMemo(() => {
+    if (!judgment) return false;
+    return isDreamRoleApproved(judgment, dreamJobId);
+  }, [judgment, dreamJobId]);
+
+  const sfxPlayedKeyRef = useRef<string | null>(null);
+
+  /** Play approve/reject as soon as Step 2 has a verdict — do not wait for the loading UI. */
+  useEffect(() => {
+    if (!complete || !judgment) return;
+    const key = `${inputKey}:${approved}`;
+    if (sfxPlayedKeyRef.current === key) return;
+    sfxPlayedKeyRef.current = key;
+    playDecisionSfx(approved);
+  }, [complete, judgment, inputKey, approved, playDecisionSfx]);
 
   const tokens = useMemo(
     () => learner.description.split(/\s+/).filter(Boolean),
@@ -123,8 +144,6 @@ export function Step2Judgment({
 
   const dreamTitle = getDreamDisplayLabel(learner);
   const topTitle = JOB_DISPLAY[judgment.topJob].title;
-  const dreamJobId = getEffectiveDreamJob(learner);
-  const approved = isDreamRoleApproved(judgment, dreamJobId);
   const detailKind = getApprovalDetailKind(judgment, dreamJobId);
   const dreamPct = judgment.percentages[dreamJobId];
   const topPct = judgment.percentages[judgment.topJob];

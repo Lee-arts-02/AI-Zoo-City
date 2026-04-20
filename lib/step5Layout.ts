@@ -1,5 +1,5 @@
 import { STEP5_REGIONS } from "@/data/step5Regions";
-import type { RedesignRegionId } from "@/types/city";
+import type { DistrictId, RedesignRegionId } from "@/types/city";
 import type { JobId } from "@/types/game";
 
 const JOB_IDS: JobId[] = ["artist", "community", "engineer", "manager"];
@@ -19,7 +19,7 @@ export function topAiJob(rec: Record<JobId, number>): JobId {
   return best;
 }
 
-export function jobToRegionId(job: JobId): Exclude<RedesignRegionId, "freelancer"> {
+export function jobToRegionId(job: JobId): DistrictId {
   return job;
 }
 

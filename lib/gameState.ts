@@ -15,12 +15,14 @@ import {
 export const TOTAL_STEPS = 7;
 
 const emptyLearner: LearnerProfile = {
+  name: "",
   presetAnimal: null,
   customAnimal: "",
   traits: [],
   dreamJob: null,
   customDreamJob: "",
   description: "",
+  drawingDataUrl: null,
 };
 
 export const initialGameState: GameState = {
@@ -43,9 +45,9 @@ export const initialGameState: GameState = {
     afterCityImageDataUrl: null,
     redesignPlacements: null,
     redesignComplete: false,
-    freelancerHubDropCount: 0,
     finishingStep5Celebration: false,
-    step7Phase: 1,
+    step6PredictionRevealed: false,
+    step7Phase: 0,
     step7CareerChoice: null,
     step7DrawingDataUrl: null,
     step7ReflectionSentence: null,

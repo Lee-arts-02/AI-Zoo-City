@@ -65,10 +65,7 @@ export function distributionGivenSingleToken(token: Step4Token): Record<JobId, n
     return softmaxJobs(raw);
   }
 
-  // dream: soft preference toward the stated goal (not a hard rule)
-  for (const j of JOB_IDS) {
-    raw[j] = j === token.modelKey ? 1.2 : 0;
-  }
+  for (const j of JOB_IDS) raw[j] = 0;
   return softmaxJobs(raw);
 }
 
@@ -105,12 +102,8 @@ export function distributionFromActiveTokens(active: Step4Token[]): Record<JobId
       const w = traitWeights[token.modelKey];
       if (w) {
         for (const j of JOB_IDS) {
-          raw[j] += w[j];
+          raw[j] += w[j] * 1.08;
         }
-      }
-    } else if (token.kind === "dream") {
-      for (const j of JOB_IDS) {
-        raw[j] += j === token.modelKey ? 0.35 : 0;
       }
     }
   }

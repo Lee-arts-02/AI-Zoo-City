@@ -2,7 +2,6 @@
 
 import OrganizerAnimalToken from "@/components/city/OrganizerAnimalToken";
 import OrganizerColorLegend from "@/components/city/OrganizerColorLegend";
-import OrganizerGuidingQuestions from "@/components/city/OrganizerGuidingQuestions";
 import OrganizerQuadrant, {
   type OrganizerQuadrantId,
 } from "@/components/city/OrganizerQuadrant";
@@ -38,7 +37,6 @@ export type AxisOrganizerProps = {
   /** After reveal: show or hide learner tokens without clearing placements. */
   learnerSortingVisible: boolean;
   setLearnerSortingVisible: Dispatch<SetStateAction<boolean>>;
-  onRevealClick: () => void;
   sortingMachineUnlocked: boolean;
 };
 
@@ -66,7 +64,6 @@ export default function AxisOrganizer({
   revealActivated,
   learnerSortingVisible,
   setLearnerSortingVisible,
-  onRevealClick,
   sortingMachineUnlocked,
 }: AxisOrganizerProps) {
   const [panelW, setPanelW] = useState(DEFAULT_W);
@@ -170,7 +167,6 @@ export default function AxisOrganizer({
   if (!open) return null;
 
   const uniqueVisited = visitedDistricts.length;
-  const showQuestions = uniqueVisited >= 3;
 
   function moveToken(instanceId: string, slot: OrganizerSlotId) {
     setPlacements((prev) => ({ ...prev, [instanceId]: slot }));
@@ -215,13 +211,9 @@ export default function AxisOrganizer({
       role="dialog"
       aria-label="Two-axis animal organizer"
     >
-      <div className="flex shrink-0 items-start justify-between gap-2 border-b border-teal-900/10 px-3 py-2.5">
+      <div className="flex shrink-0 items-start justify-between gap-2 border-b border-teal-900/10 px-3 py-2">
         <div className="min-w-0 flex-1">
-          <p className="font-serif text-sm font-semibold text-teal-950">Sorting space</p>
-          <p className="text-xs text-teal-900/85">
-            Drag by the animal strip. Use <span className="font-medium">Color</span> to record which
-            district you think each animal fits — your hypothesis, not a given answer.
-          </p>
+          <p className="font-serif text-xs font-semibold text-teal-950 sm:text-sm">Sorting space</p>
         </div>
         <div className="hidden shrink-0 sm:block sm:scale-95">
           <OrganizerColorLegend />
@@ -286,7 +278,7 @@ export default function AxisOrganizer({
           className="mt-3 rounded-xl border border-dashed border-stone-400/60 bg-stone-50/55 px-2 py-2"
           {...bankDropHandlers}
         >
-          <p className="text-center text-[0.65rem] font-medium text-stone-600">Animals to sort</p>
+          <p className="text-center text-[0.6rem] font-medium text-stone-500">Bank</p>
           <div className="relative z-10 mt-2 flex flex-wrap justify-center gap-1.5">
             {learnerSortingVisible
               ? tokensInSlot(starterTokens, placements, "bank").map(renderToken)
@@ -294,24 +286,8 @@ export default function AxisOrganizer({
           </div>
         </div>
 
-        <OrganizerGuidingQuestions visible={showQuestions} />
-
-        {showQuestions && !revealActivated ? (
-          <button
-            type="button"
-            onClick={onRevealClick}
-            className="mt-3 w-full rounded-xl border border-violet-400/70 bg-violet-100/90 px-3 py-2.5 text-sm font-semibold text-violet-950 shadow-sm transition hover:bg-violet-200/90"
-          >
-            View more from the current Zoo City
-          </button>
-        ) : null}
-
         {revealActivated ? (
           <div className="mt-3 space-y-2">
-            <p className="text-center text-[0.65rem] leading-snug text-stone-600">
-              Faded dots and softer animals show more of Zoo City’s current mix. Use the button below
-              if your own sorting makes the pattern hard to see.
-            </p>
             <button
               type="button"
               onClick={() => setLearnerSortingVisible((v) => !v)}
@@ -322,24 +298,15 @@ export default function AxisOrganizer({
           </div>
         ) : null}
 
-        <div className="mt-3 rounded-lg bg-teal-50/90 px-2 py-2 text-center text-xs text-teal-950">
-          {sortingMachineUnlocked ? (
-            <p className="font-medium text-teal-900">
-              You can open the <span className="font-semibold">City Sorting Machine</span> from the
-              map when you are ready.
-            </p>
-          ) : (
-            <p>
-              <span className="font-semibold">{uniqueVisited}</span> of{" "}
-              <span className="font-semibold">3</span> districts visited for reflection
-              {!revealActivated && uniqueVisited >= 3 ? (
-                <> — then use “View more from the current Zoo City.”</>
-              ) : uniqueVisited < 3 ? (
-                <> — visit three different districts to unlock reflection prompts.</>
-              ) : null}
-            </p>
-          )}
-        </div>
+        {sortingMachineUnlocked ? (
+          <div className="mt-2 rounded-lg bg-teal-50/80 px-2 py-1.5 text-center text-[0.65rem] text-teal-900">
+            Map: City Sorting Machine ready
+          </div>
+        ) : !revealActivated && uniqueVisited < 3 ? (
+          <div className="mt-2 text-center text-[0.6rem] text-stone-500">
+            {uniqueVisited}/3 districts
+          </div>
+        ) : null}
       </div>
 
       <button
