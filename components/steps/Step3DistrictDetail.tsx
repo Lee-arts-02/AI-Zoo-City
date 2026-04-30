@@ -31,7 +31,7 @@ export default function Step3DistrictDetail({
       <button
         type="button"
         onClick={() => onDashboardOpenChange(!dashboardOpen)}
-        className="flex h-full w-10 shrink-0 flex-col items-center justify-center rounded-l-xl rounded-r-none border border-white/40 bg-stone-900/85 px-1 text-white shadow-md backdrop-blur-md transition hover:bg-stone-800/90"
+        className="mt-2 flex h-1/2 min-h-0 w-10 shrink-0 flex-col items-center justify-center self-start rounded-l-xl rounded-r-none border border-white/40 bg-stone-900/85 px-1 py-2 text-white shadow-md backdrop-blur-md transition hover:bg-stone-800/90"
         aria-expanded={dashboardOpen}
         aria-controls="district-dashboard-scroll"
       >

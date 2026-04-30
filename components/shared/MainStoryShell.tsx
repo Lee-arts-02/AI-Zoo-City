@@ -87,7 +87,7 @@ export function MainStoryShell({ onBackFromStoryStart }: MainStoryShellProps) {
       <StepProgress currentStep={state.currentStep} />
 
       <main
-        className={`flex min-h-0 flex-1 flex-col ${wideStoryLayout ? "mt-4" : "mt-8"}`}
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${wideStoryLayout ? "mt-4" : "mt-8"}`}
       >
         <StoryStepPanel />
         <div className={wideStoryLayout ? "mt-6" : "mt-10"}>

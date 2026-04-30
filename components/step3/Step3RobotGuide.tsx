@@ -12,7 +12,8 @@ export type Step3RobotAnchor = "overview" | "info" | "sort" | "organizer";
 const ANCHOR_CLASS: Record<Step3RobotAnchor, string> = {
   overview:
     "fixed top-[5rem] left-1/2 z-[60] w-[min(94vw,30rem)] -translate-x-1/2 max-sm:top-[4.25rem]",
-  info: "fixed top-24 right-2 z-[60] w-[min(88vw,20rem)] sm:top-28 sm:right-6 md:right-10",
+  /** Sit just left of the district Info tab (~w-10) so bubble + robot stay beside it, upper area. */
+  info: "fixed top-[4.5rem] right-[3.75rem] z-[60] w-[min(88vw,20rem)] max-sm:top-[4rem] sm:top-[5.25rem] sm:right-[4.25rem] md:right-[4.5rem]",
   /**
    * Beside the Sorting space button (top-left ~10–11rem): start after the button + gap, do not cover it.
    */

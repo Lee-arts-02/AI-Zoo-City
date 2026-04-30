@@ -25,7 +25,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["curious", "gentle"],
     dreamJob: "artist",
     aiRecommendation: { artist: 56, community: 18, engineer: 12, manager: 14 },
-    voice: "I love when color meets a quiet corner.",
+    voice: "What if my curiosity leads me from the canvas to the code? I’m ready to find out. 🐇🌌",
   },
   {
     id: "hedgehog",
@@ -34,7 +34,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["careful", "creative"],
     dreamJob: "artist",
     aiRecommendation: { artist: 52, community: 20, engineer: 14, manager: 14 },
-    voice: "Tiny details make the biggest stories.",
+    voice: "The most meaningful patterns are often hidden in the smallest, quietest places. 🦔🔍",
   },
   {
     id: "capybara",
@@ -43,7 +43,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["calm", "friendly"],
     dreamJob: "community",
     aiRecommendation: { artist: 22, community: 44, engineer: 14, manager: 20 },
-    voice: "Slow afternoons are my favorite studio light.",
+    voice: "There’s a natural rhythm to everything; I’m just here to find the flow. 🍊🌊",
   },
   {
     id: "squirrel",
@@ -52,7 +52,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["quick", "playful"],
     dreamJob: "artist",
     aiRecommendation: { artist: 48, community: 22, engineer: 16, manager: 14 },
-    voice: "I stash ideas like acorns — always another season.",
+    voice: "My energy is a resource; I’m ready to spend it on any big, impossible challenge. 🐿️⚡",
   },
   {
     id: "fox",
@@ -61,7 +61,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["clever", "focused"],
     dreamJob: "engineer",
     aiRecommendation: { artist: 16, community: 18, engineer: 50, manager: 16 },
-    voice: "Shortcuts are fine if nobody gets hurt.",
+    voice: "The shortest path isn’t always a straight line; it’s the one that makes sense. 🦊🌀",
   },
   {
     id: "chameleon",
@@ -70,7 +70,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["adaptable", "patient"],
     dreamJob: "engineer",
     aiRecommendation: { artist: 14, community: 20, engineer: 48, manager: 18 },
-    voice: "I blend in until the problem shows its true shape.",
+    voice: "I’m a professional shapeshifter, ready to master whatever the new world demands. 🦎🔮",
   },
   {
     id: "cat",
@@ -79,7 +79,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["independent", "precise"],
     dreamJob: "manager",
     aiRecommendation: { artist: 18, community: 16, engineer: 22, manager: 44 },
-    voice: "I keep the schedule purring.",
+    voice: "Everything has its right place; I just happen to notice when it isn’t there. 🐈📐",
   },
   {
     id: "otter",
@@ -88,7 +88,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["joyful", "cooperative"],
     dreamJob: "engineer",
     aiRecommendation: { artist: 12, community: 26, engineer: 46, manager: 16 },
-    voice: "We test bridges by sliding across them together.",
+    voice: "Difficult things become playful when you have the right hands to hold onto. 🦦🎡",
   },
   {
     id: "bear",
@@ -97,7 +97,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["strong", "steady"],
     dreamJob: "manager",
     aiRecommendation: { artist: 12, community: 22, engineer: 18, manager: 48 },
-    voice: "Hugs and heavy lifting — I do both.",
+    voice: "I’m the quiet ground that stays still so everyone else can reach higher. 🐻🏔️",
   },
   {
     id: "lion",
@@ -106,7 +106,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["brave", "leading"],
     dreamJob: "manager",
     aiRecommendation: { artist: 10, community: 18, engineer: 14, manager: 58 },
-    voice: "I roar so the shy ones get heard too.",
+    voice: "Sometimes the bravest thing you can do is make sure the quietest voice is heard. 🦁📣",
   },
   {
     id: "wolf",
@@ -115,7 +115,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["loyal", "strategic"],
     dreamJob: "manager",
     aiRecommendation: { artist: 14, community: 22, engineer: 20, manager: 44 },
-    voice: "We go farther when we run together.",
+    voice: "We see much further when we all look toward the same horizon together. 🐺🌙",
   },
   {
     id: "tiger",
@@ -124,7 +124,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["bold", "focused"],
     dreamJob: "manager",
     aiRecommendation: { artist: 12, community: 20, engineer: 16, manager: 52 },
-    voice: "Quiet paws, loud plans.",
+    voice: "If I can see it clearly in my mind, I can make it happen in the world. 🐯💎",
   },
   {
     id: "deer",
@@ -133,7 +133,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["observant", "calm"],
     dreamJob: "community",
     aiRecommendation: { artist: 20, community: 46, engineer: 12, manager: 22 },
-    voice: "I notice who needs a quiet friend.",
+    voice: "I listen for the things that aren’t being said. That’s where the truth is. 🦌🍃",
   },
   {
     id: "sheep",
@@ -142,7 +142,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["warm", "steady"],
     dreamJob: "community",
     aiRecommendation: { artist: 24, community: 44, engineer: 10, manager: 22 },
-    voice: "Soft wool, strong fences.",
+    voice: "A warm heart and a steady hand can lead a revolution in any industry. 🐑🌤️",
   },
   {
     id: "elephant",
@@ -151,7 +151,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["kind", "patient"],
     dreamJob: "community",
     aiRecommendation: { artist: 14, community: 54, engineer: 12, manager: 20 },
-    voice: "Big hearts make room for everyone.",
+    voice: "Real change takes time, and I have all the patience the world needs. 🐘⏳",
   },
   {
     id: "zebra",
@@ -160,7 +160,7 @@ export const STEP5_ANIMALS: Step5Animal[] = [
     traits: ["balanced", "social"],
     dreamJob: "community",
     aiRecommendation: { artist: 22, community: 42, engineer: 14, manager: 22 },
-    voice: "Stripes are just paths that decided to stay friends.",
+    voice: "I love the space where different worlds meet—it’s where the music starts. 🦓🎶",
   },
 ];
 

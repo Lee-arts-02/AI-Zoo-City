@@ -102,9 +102,6 @@ export function AnimalDecisionCarousel({
             </div>
           </div>
         </div>
-        <p className="mt-2 text-center font-serif text-[11px] leading-snug text-rose-800/75 sm:text-xs">
-          Tap an animal on the map to jump here — or use the arrows to browse (always visible).
-        </p>
       </div>
     );
   }

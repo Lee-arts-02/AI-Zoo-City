@@ -90,6 +90,10 @@ export function ActiveDecisionCard({
           <span className="font-semibold text-stone-800">Traits: </span>
           <span className="text-stone-700">{animal.traits.join(" · ")}</span>
         </p>
+        <p className="mt-2 w-full max-w-[280px] text-center font-serif text-sm leading-snug text-stone-800">
+          <span className="font-bold text-stone-900">Personal voice</span>
+          <span className="text-stone-700">: “{animal.voice}”</span>
+        </p>
       </div>
 
       <button
@@ -97,7 +101,7 @@ export function ActiveDecisionCard({
         onClick={() => setOpen((o) => !o)}
         className="mt-3 rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 font-serif text-sm font-semibold text-stone-800 shadow-sm hover:bg-stone-100"
       >
-        {open ? "Hide details" : "View details"}
+        {open ? "Hide" : "AI Recommendation"}
       </button>
 
       {open ? (
@@ -112,7 +116,6 @@ export function ActiveDecisionCard({
               ))}
             </ul>
           </div>
-          <p className="italic text-stone-700">“{animal.voice}”</p>
           <p className="font-medium text-stone-800">
             Where do YOU think {firstName} should go?
           </p>
@@ -171,11 +174,6 @@ export function ActiveDecisionCard({
             );
           })()}
         </div>
-        {decided ? (
-          <p className="pt-1 text-center font-serif text-[10px] text-stone-500 sm:text-[11px]">
-            You can also drag this animal on the map to try another district.
-          </p>
-        ) : null}
       </div>
     </div>
   );

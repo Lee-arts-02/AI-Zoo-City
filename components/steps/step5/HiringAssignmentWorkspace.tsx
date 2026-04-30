@@ -280,7 +280,7 @@ export function HiringAssignmentWorkspace() {
 
   return (
     <section
-      className="flex min-h-0 w-full flex-1 flex-col gap-3 px-4 pb-4 sm:gap-4 sm:px-6 lg:px-10"
+      className="isolate flex w-full shrink-0 flex-col gap-5 px-4 pb-6 sm:gap-6 sm:px-6 lg:px-10"
       aria-labelledby="step5-title"
     >
       <div className="shrink-0 space-y-1 text-center sm:text-left">
@@ -296,49 +296,51 @@ export function HiringAssignmentWorkspace() {
         </p>
       </div>
 
-      <div className="grid min-h-0 w-full flex-1 grid-cols-1 gap-3 lg:max-h-[min(720px,calc(100dvh-200px))] lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:items-stretch lg:gap-4">
-        <div className="relative flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-white/90 p-2 shadow-inner sm:min-h-[320px] sm:p-3 lg:min-h-0">
-          <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-            <p className="font-serif text-[11px] font-semibold uppercase tracking-wide text-stone-600 sm:text-xs sm:text-left">
-              City map ({decidedCount}/{STEP5_ANIMALS.length} placed · drag or tap)
-            </p>
-            {decidedCount >= NOTE_THRESHOLD && Object.keys(speechNotes).length > 0 ? (
-              <button
-                type="button"
-                onClick={() => setBubblesHidden((h) => !h)}
-                className="rounded-full border border-stone-300 bg-stone-100/90 px-2.5 py-0.5 font-serif text-[10px] font-medium text-stone-700 shadow-sm hover:bg-stone-200/90 sm:px-3 sm:py-1 sm:text-xs"
-              >
-                {bubblesHidden ? "Show note bubbles" : "Hide note bubbles"}
-              </button>
-            ) : null}
+      <div className="flex w-full flex-col">
+        <div className="grid w-full grid-cols-1 gap-4 rounded-xl lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:items-start lg:gap-4">
+          <div className="relative flex min-h-[260px] flex-col rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-white/90 p-2 shadow-inner sm:min-h-[300px] sm:p-3">
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+              <p className="font-serif text-[11px] font-semibold uppercase tracking-wide text-stone-600 sm:text-xs sm:text-left">
+                City map ({decidedCount}/{STEP5_ANIMALS.length} placed · drag or tap)
+              </p>
+              {decidedCount >= NOTE_THRESHOLD && Object.keys(speechNotes).length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setBubblesHidden((h) => !h)}
+                  className="rounded-full border border-stone-300 bg-stone-100/90 px-2.5 py-0.5 font-serif text-[10px] font-medium text-stone-700 shadow-sm hover:bg-stone-200/90 sm:px-3 sm:py-1 sm:text-xs"
+                >
+                  {bubblesHidden ? "Show note bubbles" : "Hide note bubbles"}
+                </button>
+              ) : null}
+            </div>
+            <div className="w-full overflow-x-hidden">
+              <DistrictCityBoard
+                placements={placements}
+                pulseRegion={pulseRegion}
+                speechNotes={speechNotes}
+                showSpeechBubbles={showBubbles}
+                interactive={mapInteractive}
+                onMoveAnimal={onMoveAnimal}
+                selectedAnimalId={selectedAnimalId}
+                onAnimalClick={onMapAnimalClick}
+              />
+            </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden lg:overflow-hidden">
-            <DistrictCityBoard
-              placements={placements}
-              pulseRegion={pulseRegion}
-              speechNotes={speechNotes}
-              showSpeechBubbles={showBubbles}
-              interactive={mapInteractive}
-              onMoveAnimal={onMoveAnimal}
-              selectedAnimalId={selectedAnimalId}
-              onAnimalClick={onMapAnimalClick}
+
+          <div className="relative flex min-w-0 shrink-0 flex-col overflow-visible rounded-2xl border-2 border-rose-200/70 bg-rose-50/40 px-1 py-3 sm:px-2">
+            <AnimalDecisionCarousel
+              centerIndex={centerIndex}
+              decidedIds={decidedIds}
+              disabled={locked || saving || retraining}
+              compactRail
+              currentDistrict={placements[STEP5_ANIMALS[centerIndex]!.id]!}
+              onPrev={() =>
+                setCenterIndex((i) => (i - 1 + STEP5_ANIMALS.length) % STEP5_ANIMALS.length)
+              }
+              onNext={() => setCenterIndex((i) => (i + 1) % STEP5_ANIMALS.length)}
+              onChoose={onChoose}
             />
           </div>
-        </div>
-
-        <div className="relative flex min-h-[320px] flex-col overflow-visible rounded-2xl border-2 border-rose-200/70 bg-rose-50/40 px-1 py-3 sm:px-2 lg:min-h-0">
-          <AnimalDecisionCarousel
-            centerIndex={centerIndex}
-            decidedIds={decidedIds}
-            disabled={locked || saving || retraining}
-            compactRail
-            currentDistrict={placements[STEP5_ANIMALS[centerIndex]!.id]!}
-            onPrev={() =>
-              setCenterIndex((i) => (i - 1 + STEP5_ANIMALS.length) % STEP5_ANIMALS.length)
-            }
-            onNext={() => setCenterIndex((i) => (i + 1) % STEP5_ANIMALS.length)}
-            onChoose={onChoose}
-          />
         </div>
       </div>
 
@@ -351,8 +353,8 @@ export function HiringAssignmentWorkspace() {
         </div>
       ) : null}
 
-      <div className="shrink-0 mt-2 border-t border-rose-200/80 bg-gradient-to-b from-rose-50/50 to-transparent pt-6 sm:mt-4 sm:pt-8">
-        <div className="mx-auto max-w-lg space-y-3 rounded-2xl border border-rose-200/70 bg-white/90 p-4 shadow-[0_8px_28px_-12px_rgba(120,53,15,0.15)] ring-1 ring-rose-100/60 sm:p-5">
+      <footer className="relative z-20 mt-2 shrink-0 border-t border-rose-200/90 bg-gradient-to-b from-[#fff7f7] via-rose-50/98 to-rose-50/95 pt-6 shadow-[0_-10px_36px_-12px_rgba(120,53,15,0.12)] sm:mt-4 sm:pt-7">
+        <div className="mx-auto max-w-lg space-y-3 rounded-2xl border border-rose-200/70 bg-white/95 p-4 shadow-[0_8px_28px_-12px_rgba(120,53,15,0.15)] ring-1 ring-rose-100/60 sm:p-5">
           <p className="text-center font-serif text-xs leading-relaxed text-stone-600">
             When you save, the story freezes here and the model updates from traits, dreams, and how your map differs from the old layout — not from headcounts alone.
           </p>
@@ -370,7 +372,7 @@ export function HiringAssignmentWorkspace() {
             </p>
           ) : null}
         </div>
-      </div>
+      </footer>
 
       <Step5SaveConfirmModal
         open={saveConfirmOpen}
