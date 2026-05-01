@@ -20,7 +20,7 @@ export default function OverviewMap({ onSelectDistrict }: OverviewMapProps) {
     <Step3VisualFrame
       image={
         <Image
-          src="/map/zoo-map1.png"
+          src="/map/zoomap1.png"
           alt="Zoo City overview map — choose a district to explore"
           width={ZOO_MAP_INTRINSIC.width}
           height={ZOO_MAP_INTRINSIC.height}
