@@ -281,7 +281,7 @@ export function MachineRevealTransition({ onComplete }: MachineRevealTransitionP
             ].join(" ")}
           >
             <Image
-              src="/map/zoo-map1.png"
+              src="/map/zoomap1.png"
               alt=""
               width={ZOO_MAP_INTRINSIC.width}
               height={ZOO_MAP_INTRINSIC.height}

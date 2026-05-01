@@ -18,7 +18,7 @@ const POSS_MS = 2600;
 export function Step5IntroTransition() {
   const { dispatch, state } = useGameState();
   const [machineOp, setMachineOp] = useState(1);
-  /** false = zoo-map1, true = zoo-map2 */
+  /** false = zoomap1, true = zoomap2 */
   const [mapOnB, setMapOnB] = useState(false);
   const [caption, setCaption] = useState<string | null>(null);
 
