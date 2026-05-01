@@ -3,18 +3,22 @@
 import { useGameState } from "@/lib/gameState";
 import { resolveZooAnimalInput } from "@/data/zooAnimalDataset";
 import {
-  DREAM_JOBS,
+  DREAM_PATH_LABELS,
   extractKnownTraitsFromText,
+  getDreamDistrictForJob,
   getAnimalDisplayName,
   getAnimalEmojiForLearner,
   getResolvedAnimalKey,
+  isRepresentativeDreamJobLabel,
   isLearnerProfileComplete,
+  matchDreamJobInput,
   parseFreeTraitTokens,
   PRESET_ANIMALS,
+  REPRESENTATIVE_DREAM_JOBS,
   SUGGESTED_TRAITS,
 } from "@/lib/learnerUtils";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
-import type { DreamJob, PresetAnimal } from "@/types/game";
+import type { DreamJob, JobId, PresetAnimal } from "@/types/game";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 /** Robot guide intro — same pacing as Home Page typing sequence */
@@ -22,8 +26,8 @@ const STEP1_INTRO_SENTENCES = [
   "In this city, every animal is matched to a job by an AI Career System.",
   "Before you enter, the system needs to know who you are.",
 ] as const;
-const STEP1_CHAR_MS = 32;
-const STEP1_BETWEEN_SENTENCE_MS = 650;
+const STEP1_CHAR_MS = 40;
+const STEP1_BETWEEN_SENTENCE_MS = 850;
 
 export type Step1WelcomeProps = {
   onEnterAISystem: () => void;
@@ -36,6 +40,11 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
   const { state, dispatch } = useGameState();
   const { learner } = state;
   const [traitInput, setTraitInput] = useState("");
+  const [customDreamInput, setCustomDreamInput] = useState(() =>
+    learner.dreamJob && !isRepresentativeDreamJobLabel(learner.dreamJob)
+      ? learner.dreamJob
+      : "",
+  );
   const traitFieldId = useId();
   const nameFieldId = useId();
 
@@ -97,28 +106,53 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
   const setDreamJob = (id: DreamJob) => {
     dispatch({
       type: "SET_LEARNER",
-      learner: { dreamJob: id, customDreamJob: "" },
+      learner: {
+        dreamJob: id,
+        dreamDistrict: getDreamDistrictForJob(id),
+        customDreamJob: "",
+      },
     });
-    setDreamCustomMode(false);
   };
 
-  const chooseCustomDreamRole = () => {
-    dispatch({ type: "SET_LEARNER", learner: { dreamJob: null } });
-    setDreamCustomMode(true);
-  };
+  const setCustomDreamJobInput = (value: string) => {
+    setCustomDreamInput(value);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      if (
+        learner.dreamJob &&
+        !isRepresentativeDreamJobLabel(learner.dreamJob)
+      ) {
+        dispatch({
+          type: "SET_LEARNER",
+          learner: { dreamJob: null, dreamDistrict: null, customDreamJob: "" },
+        });
+      }
+      return;
+    }
 
-  const setCustomDreamJob = (value: string) => {
+    const matched = matchDreamJobInput(trimmed);
     dispatch({
       type: "SET_LEARNER",
-      learner: { dreamJob: null, customDreamJob: value },
+      learner: {
+        dreamJob: matched?.label ?? trimmed,
+        dreamDistrict: matched?.district ?? null,
+        customDreamJob: "",
+      },
     });
   };
 
-  const [dreamCustomMode, setDreamCustomMode] = useState(false);
-  useEffect(() => {
-    if (learner.customDreamJob.trim().length > 0) setDreamCustomMode(true);
-    if (learner.dreamJob) setDreamCustomMode(false);
-  }, [learner.customDreamJob, learner.dreamJob]);
+  const chooseCustomDreamPath = (district: JobId) => {
+    const trimmed = customDreamInput.trim();
+    if (!trimmed) return;
+    dispatch({
+      type: "SET_LEARNER",
+      learner: {
+        dreamJob: trimmed,
+        dreamDistrict: district,
+        customDreamJob: "",
+      },
+    });
+  };
 
   const complete = isLearnerProfileComplete(learner);
   const displayName = getAnimalDisplayName(learner);
@@ -397,74 +431,87 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
             >
               3. Dream job
             </h2>
-            <h3 className="mb-3 text-center font-serif text-base font-semibold text-amber-950">
-              Preset roles
-            </h3>
-            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
-              {DREAM_JOBS.map((j) => {
+            <p className="mx-auto mb-3 max-w-2xl text-center font-serif text-lg font-semibold text-amber-950">
+              What kind of dream job do you want?
+            </p>
+            <p className="mx-auto mb-6 max-w-2xl text-center font-serif text-sm text-amber-900/85 md:text-base">
+              Pick a path, or type your own dream job. The AI&apos;s clue tokens
+              still come only from your animal and traits.
+            </p>
+            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+              {REPRESENTATIVE_DREAM_JOBS.map((j) => {
                 const isOn =
-                  learner.dreamJob === j.id &&
-                  learner.customDreamJob.trim().length === 0;
+                  learner.dreamJob === j.label &&
+                  learner.dreamDistrict === j.district &&
+                  customDreamInput.trim().length === 0;
                 return (
                   <button
-                    key={j.id}
+                    key={j.key}
                     type="button"
-                    onClick={() => setDreamJob(j.id)}
+                    onClick={() => {
+                      setCustomDreamInput("");
+                      setDreamJob(j.label);
+                    }}
+                    aria-pressed={isOn}
                     className={[
                       "rounded-2xl border-4 p-3 text-center font-serif transition",
                       isOn
                         ? "border-orange-500 bg-orange-100 shadow-[4px_4px_0_0_rgba(234,88,12,0.35)]"
-                        : "border-amber-200/80 bg-white/70 hover:border-orange-300",
+                        : "border-amber-200/80 bg-white/80 hover:border-orange-300",
                     ].join(" ")}
                   >
                     <span className="text-2xl" aria-hidden>
                       {j.emoji}
                     </span>
-                    <span className="mt-1 block text-xs font-semibold text-amber-950 sm:text-sm">
+                    <span className="mt-1 block text-sm font-bold text-amber-950">
                       {j.label}
+                    </span>
+                    <span className="mt-1 block text-xs font-medium text-amber-800/80">
+                      {j.description}
                     </span>
                   </button>
                 );
               })}
-              <button
-                type="button"
-                onClick={chooseCustomDreamRole}
-                className={[
-                  "rounded-2xl border-4 p-3 text-center font-serif transition",
-                  dreamCustomMode ||
-                  (learner.dreamJob === null &&
-                    learner.customDreamJob.trim().length > 0)
-                    ? "border-orange-500 bg-orange-100 shadow-[4px_4px_0_0_rgba(234,88,12,0.35)]"
-                    : "border-amber-200/80 bg-white/70 hover:border-orange-300",
-                ].join(" ")}
-              >
-                <span className="text-2xl" aria-hidden>
-                  ✨
-                </span>
-                <span className="mt-1 block text-xs font-semibold text-amber-950 sm:text-sm">
-                  Custom
-                </span>
-              </button>
             </div>
             <div className="mx-auto mt-8 max-w-2xl rounded-2xl border-2 border-amber-300/70 bg-amber-50/50 p-5 md:p-6">
-              <h3 className="mb-2 text-center font-serif text-base font-semibold text-amber-950">
-                Custom dream role
-              </h3>
-              <p className="mb-4 text-center font-serif text-sm text-amber-900/80">
-                Describe any role you like. It stays on your card as{" "}
-                <em>your</em> dream — the machine&apos;s prediction clues use
-                your animal and traits, not this dream label.
-              </p>
-              <label className="mx-auto block max-w-lg font-serif text-sm font-medium text-amber-900">
-                Your dream
+              <label className="block font-serif text-sm font-semibold text-amber-900">
+                Or type your own dream job
                 <input
                   type="text"
-                  value={learner.customDreamJob}
-                  onChange={(e) => setCustomDreamJob(e.target.value)}
-                  placeholder="e.g. Marine biologist, game designer…"
-                  className="mt-1 w-full rounded-xl border-2 border-amber-300 bg-white px-3 py-2 font-serif text-amber-950 placeholder:text-amber-800/40 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                  value={customDreamInput}
+                  onChange={(e) =>
+                    setCustomDreamJobInput(e.target.value.slice(0, 80))
+                  }
+                  placeholder="e.g. doctor, robot engineer, film maker…"
+                  className="mt-2 w-full rounded-xl border-2 border-amber-300 bg-white px-3 py-2 font-serif text-amber-950 placeholder:text-amber-800/40 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
                 />
               </label>
+              {customDreamInput.trim().length > 0 && learner.dreamDistrict ? (
+                <p className="mt-3 text-center font-serif text-sm text-amber-900/80">
+                  Zoo City connects this dream to the{" "}
+                  <strong>{DREAM_PATH_LABELS[learner.dreamDistrict]}</strong>{" "}
+                  path.
+                </p>
+              ) : null}
+              {customDreamInput.trim().length > 0 && !learner.dreamDistrict ? (
+                <div className="mt-4 rounded-xl border border-orange-200 bg-white/75 p-4">
+                  <p className="text-center font-serif text-sm font-semibold text-amber-950">
+                    Which path is this dream closest to?
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {REPRESENTATIVE_DREAM_JOBS.map((j) => (
+                      <button
+                        key={`custom-${j.key}`}
+                        type="button"
+                        onClick={() => chooseCustomDreamPath(j.district)}
+                        className="rounded-xl border-2 border-amber-200 bg-white px-3 py-2 font-serif text-sm font-semibold text-amber-950 hover:border-orange-300 hover:bg-orange-50"
+                      >
+                        {j.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </section>
 
@@ -505,7 +552,7 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
             {!complete && (
               <p className="max-w-lg text-center font-serif text-sm text-orange-800">
                 Pick a Zoo City animal (grid or typed), at least one trait, and
-                a dream role (preset or custom) to continue.
+                a dream job path to continue.
               </p>
             )}
             <button

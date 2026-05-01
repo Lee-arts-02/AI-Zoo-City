@@ -90,7 +90,7 @@ export function Step5IntroTransition() {
         >
           <div className="absolute inset-0">
             <Image
-              src="/map/zoo-map1.png"
+              src="/map/zoomap1.png"
               alt=""
               width={ZOO_MAP.width}
               height={ZOO_MAP.height}
@@ -103,7 +103,7 @@ export function Step5IntroTransition() {
               draggable={false}
             />
             <Image
-              src="/map/zoo-map2.png"
+              src="/map/zoomap2.png"
               alt=""
               width={ZOO_MAP.width}
               height={ZOO_MAP.height}

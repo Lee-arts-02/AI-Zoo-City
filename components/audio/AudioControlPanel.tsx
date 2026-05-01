@@ -41,6 +41,31 @@ function IconSpeakerOff(props: { className?: string }) {
   );
 }
 
+function IconSliders(props: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={props.className}
+      aria-hidden
+    >
+      <path d="M4 21v-7" />
+      <path d="M4 10V3" />
+      <path d="M12 21v-9" />
+      <path d="M12 8V3" />
+      <path d="M20 21v-5" />
+      <path d="M20 12V3" />
+      <path d="M2 14h4" />
+      <path d="M10 8h4" />
+      <path d="M18 16h4" />
+    </svg>
+  );
+}
+
 export function AudioControlPanel() {
   const { volume, muted, setVolume, toggleMute } = useAudio();
   const id = useId();
@@ -69,17 +94,16 @@ export function AudioControlPanel() {
   return (
     <div
       ref={panelRef}
-      className="pointer-events-auto fixed right-3 top-3 z-[500] flex items-center gap-0 rounded-2xl border border-amber-900/15 bg-white/70 py-2 pl-2 pr-2 shadow-md backdrop-blur-md sm:right-4 sm:top-4 sm:pl-3 sm:pr-3"
+      className="pointer-events-auto fixed right-3 top-3 z-[500] flex items-center gap-0.5 rounded-2xl border border-amber-900/15 bg-white/70 py-2 pl-2 pr-2 shadow-md backdrop-blur-md sm:right-4 sm:top-4 sm:gap-1 sm:pl-3 sm:pr-3"
       role="region"
       aria-label="Audio controls"
     >
       <button
         type="button"
-        onClick={() => setVolumeOpen((o) => !o)}
+        onClick={toggleMute}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-amber-950/90 transition hover:bg-amber-100/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
-        aria-expanded={volumeOpen}
-        aria-controls={volumeOpen ? sliderId : undefined}
-        aria-label={volumeOpen ? "Hide volume" : "Show volume"}
+        aria-pressed={muted}
+        aria-label={muted ? "Unmute music" : "Mute music"}
       >
         {muted ? (
           <IconSpeakerOff className="h-5 w-5" />
@@ -88,20 +112,23 @@ export function AudioControlPanel() {
         )}
       </button>
 
+      <button
+        type="button"
+        onClick={() => setVolumeOpen((o) => !o)}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-amber-950/90 transition hover:bg-amber-100/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
+        aria-expanded={volumeOpen}
+        aria-controls={volumeOpen ? sliderId : undefined}
+        aria-label={volumeOpen ? "Hide volume slider" : "Show volume slider"}
+      >
+        <IconSliders className="h-5 w-5" />
+      </button>
+
       {volumeOpen && (
         <div className="flex min-w-[120px] max-w-[180px] flex-col gap-0.5 border-l border-amber-900/10 pl-2 sm:min-w-[140px] sm:pl-3">
           <div className="flex items-center justify-between gap-2 pb-1">
             <span className="font-sans text-[10px] font-medium uppercase tracking-wide text-amber-900/60">
               Volume
             </span>
-            <button
-              type="button"
-              onClick={toggleMute}
-              className="rounded-lg px-2 py-0.5 font-sans text-[11px] font-semibold text-amber-900/80 hover:bg-amber-100/90"
-              aria-pressed={muted}
-            >
-              {muted ? "Unmute" : "Mute"}
-            </button>
           </div>
           <label htmlFor={sliderId} className="sr-only">
             Volume level

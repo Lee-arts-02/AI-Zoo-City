@@ -50,5 +50,5 @@ export const STEP3_BRIDGE_LINE2_HOLD_MS = 3000;
 /** After post-reveal robot line finishes, wait before showing “Back to overview”. */
 export const STEP3_POST_REVEAL_BACK_DELAY_MS = 3000;
 
-export const STEP3_CHAR_MS = 28;
-export const STEP3_BETWEEN_SENTENCES_MS = 650;
+export const STEP3_CHAR_MS = 34;
+export const STEP3_BETWEEN_SENTENCES_MS = 800;

@@ -14,7 +14,7 @@ export type RetrainedPredictionId = JobId | "freelancer";
 /** Canonical animal id from the built-in Zoo City dataset (see `data/zooAnimalDataset.ts`). */
 export type PresetAnimal = ZooCityAnimalKey;
 
-export type DreamJob = JobId;
+export type DreamJob = string;
 
 export type LearnerProfile = {
   /** Learner's own name (optional); trimmed in UI, max length enforced in inputs. */
@@ -25,7 +25,10 @@ export type LearnerProfile = {
   customAnimal: string;
   /** Up to 3 traits (known keys from the model, normalized lowercase). */
   traits: string[];
+  /** Concrete learner-facing dream job label, mapped to dreamDistrict. */
   dreamJob: DreamJob | null;
+  /** District used for prediction comparison and city-level logic. */
+  dreamDistrict: JobId | null;
   /** Free-text dream role when not using a preset job; empty when using presets only. */
   customDreamJob: string;
   /** Full character sentence, kept in sync in the game reducer. */

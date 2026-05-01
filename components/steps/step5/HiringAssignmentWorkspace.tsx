@@ -283,17 +283,50 @@ export function HiringAssignmentWorkspace() {
       className="isolate flex w-full shrink-0 flex-col gap-5 px-4 pb-6 sm:gap-6 sm:px-6 lg:px-10"
       aria-labelledby="step5-title"
     >
-      <div className="shrink-0 space-y-1 text-center sm:text-left">
+      <div className="shrink-0 space-y-3 text-center sm:text-left">
         <p className="font-serif text-sm font-medium uppercase tracking-widest text-rose-800/80">
           Chapter 5
         </p>
         <h2 id="step5-title" className="font-serif text-xl font-bold text-rose-950 sm:text-2xl lg:text-3xl">
           Redesign the city, one animal at a time
         </h2>
-        <p className="mx-auto max-w-prose font-serif text-xs leading-relaxed text-rose-950/85 sm:mx-0 sm:text-sm">
-          Map and card stay together: tap an animal on the map to open their card. Drag to move
-          districts before save. Bubbles after several placements are gentle thoughts, not scores.
-        </p>
+        <div
+          className="mx-auto flex w-full max-w-4xl items-end gap-2 sm:mx-0 sm:gap-3"
+          role="region"
+          aria-label="Chapter guide"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/robot.png"
+            alt=""
+            className="h-14 w-auto shrink-0 self-end object-contain drop-shadow-sm sm:h-16"
+          />
+          <div className="relative min-w-0 flex-1">
+            <div
+              className="pointer-events-none absolute left-0 top-1/2 z-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-sky-200/90 bg-white/95 shadow-[-2px_2px_0_0_rgba(14,165,233,0.08)]"
+              aria-hidden
+            />
+            <div className="relative z-10 rounded-3xl border-2 border-sky-200/90 bg-white/95 px-4 py-3 shadow-[4px_4px_0_0_rgba(14,165,233,0.12)] sm:px-5 sm:py-4">
+              <div className="space-y-2 font-serif text-xs leading-relaxed text-slate-800 sm:text-sm sm:leading-relaxed">
+                <p>Now it&apos;s your turn to redesign Zoo City.</p>
+                <p>
+                  Look closely at each animal. You can see their{" "}
+                  <strong className="font-semibold text-slate-900">traits</strong>, check the{" "}
+                  <strong className="font-semibold text-slate-900">AI recommendation</strong>, and listen to{" "}
+                  <strong className="font-semibold text-slate-900">their voices</strong>.
+                </p>
+                <p>
+                  There are no right or wrong answers here, but{" "}
+                  <strong className="font-semibold text-slate-900">your choices matter to the animals</strong>.
+                </p>
+                <p>
+                  You can choose a district from each animal&apos;s identity card, or drag animals directly on the
+                  map. Before you save, you can still move animals again and rethink your choices.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="flex w-full flex-col">

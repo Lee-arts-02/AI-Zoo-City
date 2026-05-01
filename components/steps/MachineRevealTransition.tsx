@@ -56,18 +56,18 @@ export function MachineRevealTransition({ onComplete }: MachineRevealTransitionP
         }, ms),
       );
     };
-    schedule(2600, "fadeDistricts");
-    schedule(5000, "holdMap");
-    schedule(6200, "networkIn");
-    schedule(8200, "networkZoom");
-    schedule(10000, "morph");
+    schedule(3400, "fadeDistricts");
+    schedule(6000, "holdMap");
+    schedule(7400, "networkIn");
+    schedule(9500, "networkZoom");
+    schedule(11400, "morph");
 
     return () => {
       ids.forEach((id) => window.clearTimeout(id));
     };
   }, []);
 
-  const showNarrative = phase === "narrative";
+  const showNarrative = phase === "narrative" || phase === "fadeDistricts";
   const fadeDistricts =
     phase === "fadeDistricts" ||
     phase === "holdMap" ||

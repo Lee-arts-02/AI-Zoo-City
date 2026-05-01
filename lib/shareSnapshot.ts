@@ -24,6 +24,7 @@ export type ShareSnapshotV1 = {
     customAnimal: string;
     traits: string[];
     dreamJob: DreamJob | null;
+    dreamDistrict?: JobId | null;
     customDreamJob: string;
   };
   /**
@@ -101,6 +102,7 @@ export function buildShareSnapshotFromGameState(
       customAnimal: learner.customAnimal,
       traits: [...learner.traits],
       dreamJob: learner.dreamJob,
+      dreamDistrict: learner.dreamDistrict,
       customDreamJob: learner.customDreamJob,
     },
     learnerName: learner.name.trim().slice(0, 30),
@@ -161,8 +163,15 @@ export function decodeSharePayload(encoded: string): ShareSnapshotV1 | null {
     if (!summary.traits.every((t) => typeof t === "string")) return null;
     if (summary.dreamJob !== null) {
       if (typeof summary.dreamJob !== "string") return null;
+      if (summary.dreamJob.length > 80) return null;
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(summary, "dreamDistrict") &&
+      summary.dreamDistrict !== null
+    ) {
+      if (typeof summary.dreamDistrict !== "string") return null;
       const jobs: JobId[] = ["artist", "engineer", "manager", "community"];
-      if (!jobs.includes(summary.dreamJob as JobId)) return null;
+      if (!jobs.includes(summary.dreamDistrict as JobId)) return null;
     }
     if (typeof summary.customDreamJob !== "string") return null;
 

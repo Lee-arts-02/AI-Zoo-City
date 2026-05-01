@@ -1,6 +1,7 @@
 "use client";
 
 import { JOB_DISPLAY } from "@/lib/aiModel";
+import { DREAM_DISTRICT_LABELS } from "@/lib/learnerUtils";
 import type { JobId, RetrainedPredictionId } from "@/types/game";
 import {
   placeForRetrainedPrediction,
@@ -9,7 +10,7 @@ import {
 
 export type PredictionComparisonProps = {
   dreamLabel: string;
-  dreamJobId: JobId;
+  dreamDistrictId: JobId;
   originalTop: JobId;
   currentTop: RetrainedPredictionId;
   explanation: string;
@@ -17,7 +18,7 @@ export type PredictionComparisonProps = {
 
 export function PredictionComparison({
   dreamLabel,
-  dreamJobId,
+  dreamDistrictId,
   originalTop,
   currentTop,
   explanation,
@@ -25,14 +26,25 @@ export function PredictionComparison({
   const shifted = originalTop !== currentTop;
   return (
     <div className="w-full space-y-6">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-4">
         <div className="rounded-2xl border border-stone-200/90 bg-white/95 px-4 py-4 shadow-sm ring-1 ring-stone-900/5">
           <p className="font-serif text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Dream job
           </p>
           <p className="mt-2 font-serif text-xl font-bold text-stone-900">{dreamLabel}</p>
           <p className="mt-1 font-serif text-xs text-stone-600">
-            From Step 1 — {JOB_DISPLAY[dreamJobId].placeName}
+            From Step 1
+          </p>
+        </div>
+        <div className="rounded-2xl border border-stone-200/90 bg-white/95 px-4 py-4 shadow-sm ring-1 ring-stone-900/5">
+          <p className="font-serif text-[11px] font-semibold uppercase tracking-wide text-stone-500">
+            Dream district
+          </p>
+          <p className="mt-2 font-serif text-xl font-bold text-stone-900">
+            {DREAM_DISTRICT_LABELS[dreamDistrictId]}
+          </p>
+          <p className="mt-1 font-serif text-xs text-stone-600">
+            Used for comparison
           </p>
         </div>
         <div className="rounded-2xl border border-stone-200/90 bg-stone-50/95 px-4 py-4 shadow-sm ring-1 ring-stone-900/5">

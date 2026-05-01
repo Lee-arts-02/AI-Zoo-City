@@ -37,6 +37,7 @@ export function Step4AISystem() {
         c: state.learner.customAnimal.trim(),
         t: state.learner.traits,
         d: state.learner.dreamJob,
+        dd: state.learner.dreamDistrict,
         cd: state.learner.customDreamJob.trim(),
       }),
     [
@@ -44,6 +45,7 @@ export function Step4AISystem() {
       state.learner.customAnimal,
       state.learner.traits,
       state.learner.dreamJob,
+      state.learner.dreamDistrict,
       state.learner.customDreamJob,
     ],
   );

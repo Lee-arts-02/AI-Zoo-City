@@ -16,16 +16,21 @@ import { buildPredictionComparisonPayload } from "@/lib/step7PredictionCompariso
 import { getAiSuggestedJob } from "@/lib/step7AiSuggest";
 import { useGameState } from "@/lib/gameState";
 import {
-  DREAM_JOBS,
+  DREAM_DISTRICT_LABELS,
   extractKnownTraitsFromText,
   formatLearnerNameForDisplay,
   getAnimalDisplayName,
+  getDreamDistrictForJob,
   getDreamDisplayLabel,
+  isRepresentativeDreamJobLabel,
+  matchDreamJobInput,
   parseFreeTraitTokens,
   PRESET_ANIMALS,
+  REPRESENTATIVE_DREAM_JOBS,
   SUGGESTED_TRAITS,
 } from "@/lib/learnerUtils";
-import type { DreamJob, PresetAnimal, Step7CareerChoice } from "@/types/game";
+import { JOB_DISPLAY } from "@/lib/aiModel";
+import type { DreamJob, JobId, PresetAnimal, Step7CareerChoice } from "@/types/game";
 import { Step7DrawRobotPrompt } from "@/components/step7/Step7DrawRobotPrompt";
 import { Step7PredictionReveal } from "@/components/step7/Step7PredictionReveal";
 import { Step7SharePanel } from "@/components/step7/Step7SharePanel";
@@ -46,8 +51,8 @@ function formatTraits(traits: string[]): string {
     .join(", ");
 }
 
-function jobLabel(id: DreamJob): string {
-  return DREAM_JOBS.find((j) => j.id === id)?.label ?? id;
+function jobLabel(id: JobId): string {
+  return JOB_DISPLAY[id].title;
 }
 
 /** Intro — bold “predictions”; shared by on-screen certificate and PNG export. */
@@ -79,8 +84,8 @@ function CertificateWhatYouDiscoveredList({ ulClassName }: { ulClassName: string
 }
 
 /** Match Step 1 welcome robot typing pace */
-const STEP7_PHASE1_CHAR_MS = 32;
-const STEP7_PHASE1_BETWEEN_MS = 650;
+const STEP7_PHASE1_CHAR_MS = 40;
+const STEP7_PHASE1_BETWEEN_MS = 850;
 
 export function Step7Reflection() {
   const { state, dispatch } = useGameState();
@@ -272,14 +277,40 @@ export function Step7Reflection() {
   const setDreamJob = (id: DreamJob) => {
     dispatch({
       type: "SET_LEARNER",
-      learner: { dreamJob: id, customDreamJob: "" },
+      learner: {
+        dreamJob: id,
+        dreamDistrict: getDreamDistrictForJob(id),
+        customDreamJob: "",
+      },
     });
   };
 
-  const setCustomDreamJob = (value: string) => {
+  const setCustomDreamJobInput = (value: string) => {
+    const trimmedValue = value.slice(0, 80);
+    setCustomDreamInput(trimmedValue);
+    const trimmed = trimmedValue.trim();
+    if (!trimmed) return;
+    const matched = matchDreamJobInput(trimmed);
     dispatch({
       type: "SET_LEARNER",
-      learner: { dreamJob: null, customDreamJob: value },
+      learner: {
+        dreamJob: matched?.label ?? trimmed,
+        dreamDistrict: matched?.district ?? null,
+        customDreamJob: "",
+      },
+    });
+  };
+
+  const chooseCustomDreamPath = (district: JobId) => {
+    const trimmed = customDreamInput.trim();
+    if (!trimmed) return;
+    dispatch({
+      type: "SET_LEARNER",
+      learner: {
+        dreamJob: trimmed,
+        dreamDistrict: district,
+        customDreamJob: "",
+      },
     });
   };
 
@@ -287,6 +318,11 @@ export function Step7Reflection() {
     learner.customAnimal.trim().length > 0 && learner.presetAnimal === null;
 
   const [traitInput, setTraitInput] = useState("");
+  const [customDreamInput, setCustomDreamInput] = useState(() =>
+    learner.dreamJob && !isRepresentativeDreamJobLabel(learner.dreamJob)
+      ? learner.dreamJob
+      : "",
+  );
   const traitFieldId = useId();
   const [nameEditing, setNameEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -598,42 +634,64 @@ export function Step7Reflection() {
                     </div>
                   </div>
                   <label className="block font-serif text-xs text-amber-900/70">
-                    Dream role (preset)
+                    Dream job
                     <select
                       className="mt-1 w-full rounded-xl border border-amber-900/20 bg-white px-3 py-2 font-serif text-amber-950"
                       value={
-                        learner.customDreamJob.trim()
-                          ? ""
-                          : (learner.dreamJob ?? "")
+                        isRepresentativeDreamJobLabel(learner.dreamJob)
+                          ? (learner.dreamJob ?? "")
+                          : ""
                       }
                       onChange={(e) => {
                         const v = e.target.value;
                         if (v === "") return;
+                        setCustomDreamInput("");
                         setDreamJob(v as DreamJob);
                       }}
                     >
-                      <option value="">
-                        {learner.customDreamJob.trim()
-                          ? "Using custom dream below…"
-                          : "Choose…"}
-                      </option>
-                      {DREAM_JOBS.map((j) => (
-                        <option key={j.id} value={j.id}>
+                      <option value="">Choose…</option>
+                      {REPRESENTATIVE_DREAM_JOBS.map((j) => (
+                        <option key={j.key} value={j.label}>
                           {j.label}
                         </option>
                       ))}
                     </select>
                   </label>
                   <label className="block font-serif text-xs text-amber-900/70">
-                    Custom dream role (optional)
+                    Or type your own dream job
                     <input
                       type="text"
                       className="mt-1 w-full rounded-xl border border-amber-900/20 bg-white px-3 py-2 font-serif text-amber-950"
-                      value={learner.customDreamJob}
-                      onChange={(e) => setCustomDreamJob(e.target.value)}
-                      placeholder="Overrides preset when filled"
+                      value={customDreamInput}
+                      onChange={(e) => setCustomDreamJobInput(e.target.value)}
+                      placeholder="e.g. Doctor, robot engineer…"
                     />
                   </label>
+                  {customDreamInput.trim().length > 0 && !learner.dreamDistrict ? (
+                    <div className="rounded-xl border border-amber-900/15 bg-amber-50/70 p-3">
+                      <p className="font-serif text-xs font-semibold text-amber-900/80">
+                        Which path is this dream closest to?
+                      </p>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        {REPRESENTATIVE_DREAM_JOBS.map((j) => (
+                          <button
+                            key={`step7-custom-${j.key}`}
+                            type="button"
+                            onClick={() => chooseCustomDreamPath(j.district)}
+                            className="rounded-lg border border-amber-900/20 bg-white px-2 py-1.5 font-serif text-xs font-semibold text-amber-950 hover:bg-amber-100"
+                          >
+                            {j.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  <p className="font-serif text-xs text-amber-900/65">
+                    District for comparison:{" "}
+                    {learner.dreamDistrict
+                      ? DREAM_DISTRICT_LABELS[learner.dreamDistrict]
+                      : "Choose a dream job"}
+                  </p>
                 </div>
               </details>
 
@@ -836,31 +894,50 @@ export function Step7Reflection() {
                     className="mx-auto mt-4 max-h-48 w-auto max-w-full rounded-xl border border-amber-900/12 object-contain"
                   />
                 ) : null}
-                <dl className="mt-4 space-y-1.5 border-t border-amber-900/10 pt-4 font-serif text-sm text-amber-950">
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-amber-800/75">Animal</dt>
-                    <dd className="text-right font-medium">
-                      {getAnimalDisplayName(learner)
-                        .split(/\s+/)
-                        .map(
-                          (w) =>
-                            w.charAt(0).toUpperCase() +
-                            w.slice(1).toLowerCase(),
-                        )
-                        .join(" ")}
-                    </dd>
+                <div className="mt-4 rounded-2xl border border-amber-400/35 bg-amber-100/35 p-4 shadow-[0_6px_20px_-12px_rgba(180,83,9,0.45)]">
+                  <p className="text-center font-serif text-base font-semibold text-amber-950 sm:text-lg">
+                    Your identity in Zoo City
+                  </p>
+                  <dl className="mt-3 space-y-2.5 font-serif text-amber-950">
+                    <div className="flex items-start justify-between gap-3 rounded-xl bg-white/75 px-3 py-2">
+                      <dt className="text-sm font-semibold uppercase tracking-wide text-amber-800/85">
+                        Animal
+                      </dt>
+                      <dd className="text-right text-base font-semibold sm:text-lg">
+                        {getAnimalDisplayName(learner)
+                          .split(/\s+/)
+                          .map(
+                            (w) =>
+                              w.charAt(0).toUpperCase() +
+                              w.slice(1).toLowerCase(),
+                          )
+                          .join(" ")}
+                      </dd>
+                    </div>
+                    <div className="flex items-start justify-between gap-3 rounded-xl bg-white/75 px-3 py-2">
+                      <dt className="text-sm font-semibold uppercase tracking-wide text-amber-800/85">
+                        Dream
+                      </dt>
+                      <dd className="text-right text-base font-semibold sm:text-lg">{dreamLabel}</dd>
+                    </div>
+                    <div className="flex items-start justify-between gap-3 rounded-xl bg-white/75 px-3 py-2">
+                      <dt className="text-sm font-semibold uppercase tracking-wide text-amber-800/85">
+                        Your Choice
+                      </dt>
+                      <dd className="text-right text-base font-semibold sm:text-lg">
+                        {CHOICE_LABEL[choice]}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-3 rounded-xl bg-amber-50/90 px-3 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-800/85">
+                      Words you kept
+                    </p>
+                    <p className="mt-1 font-serif text-base font-medium leading-relaxed text-amber-950 sm:text-lg">
+                      {reflectionKept}
+                    </p>
                   </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-amber-800/75">Dream</dt>
-                    <dd className="text-right font-medium">{dreamLabel}</dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="text-amber-800/75">Your Choice</dt>
-                    <dd className="text-right font-medium">
-                      {CHOICE_LABEL[choice]}
-                    </dd>
-                  </div>
-                </dl>
+                </div>
                 <p className="mt-4 text-center font-serif text-sm font-medium leading-relaxed text-amber-950/95">
                   {CERTIFICATE_PERSONALIZED[choice]}
                 </p>
@@ -873,50 +950,6 @@ export function Step7Reflection() {
                 <p className="mt-4 text-center font-serif text-sm italic text-amber-900/90">
                   “{CERTIFICATE_CLOSING[choice]}”
                 </p>
-
-                <div className="mt-8 border-t border-amber-900/15 bg-white/60 px-1 py-6 sm:px-2">
-                  <h3 className="text-center font-serif text-lg font-bold text-amber-950">
-                    Your Path in Zoo City
-                  </h3>
-                  <dl className="mt-4 space-y-2 font-serif text-sm text-amber-950">
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-amber-800/75">Dream</dt>
-                      <dd className="font-medium">{dreamLabel}</dd>
-                    </div>
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-amber-800/75">AI Suggests</dt>
-                      <dd className="font-medium">{aiSuggestLabel}</dd>
-                    </div>
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-amber-800/75">Your Choice</dt>
-                      <dd className="text-right font-medium">
-                        {CHOICE_LABEL[choice]}
-                      </dd>
-                    </div>
-                  </dl>
-                  <p className="mt-4 border-t border-amber-900/10 pt-4 font-serif text-sm leading-relaxed text-amber-950/95">
-                    {reflectionKept}
-                  </p>
-                  <p className="mt-4 font-serif text-sm leading-relaxed text-amber-900/85">
-                    In real life, systems can suggest paths, but people make
-                    decisions.
-                  </p>
-                </div>
-
-                <div className="mt-6 flex flex-col items-center border-t border-amber-900/10 pt-5">
-                  <div className="rounded-lg bg-white p-2 ring-1 ring-stone-200/80">
-                    {shareUrl ? (
-                      <QRCode value={shareUrl} size={112} level="M" className="h-auto w-full" />
-                    ) : (
-                      <div className="flex h-[112px] w-[112px] items-center justify-center font-serif text-xs text-amber-800/60">
-                        …
-                      </div>
-                    )}
-                  </div>
-                  <p className="mx-auto mt-2 text-center font-serif text-xs text-amber-800/75">
-                    Scan to open your share link.
-                  </p>
-                </div>
               </article>
             </div>
 
@@ -996,32 +1029,6 @@ export function Step7Reflection() {
                     “{CERTIFICATE_CLOSING[choice]}”
                   </p>
 
-                  <div className="mx-auto mt-10 w-full max-w-xl rounded-2xl border border-amber-900/12 bg-white/90 p-6 text-left shadow-sm">
-                    <p className="text-center text-xl font-bold text-amber-950">
-                      Your Path in Zoo City
-                    </p>
-                    <dl className="mt-4 space-y-2 text-lg">
-                      <div className="flex justify-between gap-2">
-                        <dt className="text-amber-800/80">Dream</dt>
-                        <dd className="font-medium">{dreamLabel}</dd>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <dt className="text-amber-800/80">AI Suggests</dt>
-                        <dd className="font-medium">{aiSuggestLabel}</dd>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <dt className="text-amber-800/80">Your Choice</dt>
-                        <dd className="text-right font-medium">{CHOICE_LABEL[choice]}</dd>
-                      </div>
-                    </dl>
-                    <p className="mt-4 border-t border-amber-900/10 pt-4 leading-relaxed text-amber-950/95">
-                      {reflectionKept}
-                    </p>
-                    <p className="mt-4 leading-relaxed text-amber-900/85">
-                      In real life, systems can suggest paths, but people make decisions.
-                    </p>
-                  </div>
-
                   <div className="mx-auto mt-10 flex w-full max-w-xl flex-col items-center">
                     <div className="rounded-xl bg-white p-3 ring-2 ring-amber-900/10">
                       {shareUrl ? (
@@ -1033,7 +1040,8 @@ export function Step7Reflection() {
                       )}
                     </div>
                     <p className="mt-3 text-center text-sm text-amber-800/80">
-                      Scan to open your share link.
+                    Share your Zoo City AI model with your friends.
+                    See if they can land their dream jobs in your city!
                     </p>
                   </div>
                 </div>

@@ -85,7 +85,12 @@ export function inferVisitorWithSharedModel(
   snapshot: ShareSnapshotV1,
   visitor: Pick<
     LearnerProfile,
-    "presetAnimal" | "customAnimal" | "traits" | "dreamJob" | "customDreamJob"
+    | "presetAnimal"
+    | "customAnimal"
+    | "traits"
+    | "dreamJob"
+    | "dreamDistrict"
+    | "customDreamJob"
   >,
 ): VisitorInferenceResult {
   const placements = snapshot.placements;
@@ -97,6 +102,7 @@ export function inferVisitorWithSharedModel(
     customAnimal: visitor.customAnimal,
     traits: visitor.traits,
     dreamJob: visitor.dreamJob,
+    dreamDistrict: visitor.dreamDistrict,
     customDreamJob: visitor.customDreamJob,
     description: "",
     drawingDataUrl: null,

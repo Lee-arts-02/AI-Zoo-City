@@ -146,8 +146,8 @@ export function DrawingCanvas({
     const p = pos(e);
     ctx.save();
     if (mode === "erase") {
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.strokeStyle = "rgba(0,0,0,1)";
+      ctx.globalCompositeOperation = "source-over";
+      ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 18;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";

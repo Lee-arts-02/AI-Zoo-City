@@ -20,6 +20,7 @@ const emptyLearner: LearnerProfile = {
   customAnimal: "",
   traits: [],
   dreamJob: null,
+  dreamDistrict: null,
   customDreamJob: "",
   description: "",
   drawingDataUrl: null,
@@ -69,6 +70,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state.learner,
         ...action.learner,
       };
+      if (typeof learner.dreamJob === "string") {
+        learner.dreamJob = learner.dreamJob.trim().slice(0, 80);
+      }
+      learner.customDreamJob = learner.customDreamJob.slice(0, 80);
       return {
         ...state,
         learner: {

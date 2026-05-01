@@ -8,12 +8,13 @@ import {
 import { ShareVisitorOutcome } from "@/components/share/ShareVisitorOutcome";
 import { inferVisitorWithSharedModel } from "@/lib/shareVisitorInference";
 import {
-  DREAM_JOBS,
   formatLearnerNameForDisplay,
   getAnimalDisplayName,
+  getDreamDistrictForJob,
   getDreamDisplayLabel,
   getResolvedAnimalKey,
   PRESET_ANIMALS,
+  REPRESENTATIVE_DREAM_JOBS,
   SUGGESTED_TRAITS,
 } from "@/lib/learnerUtils";
 import type { DreamJob, LearnerProfile, PresetAnimal } from "@/types/game";
@@ -24,13 +25,19 @@ type Phase = "form" | "result";
 
 function defaultVisitorState(): Pick<
   LearnerProfile,
-  "presetAnimal" | "customAnimal" | "traits" | "dreamJob" | "customDreamJob"
+  | "presetAnimal"
+  | "customAnimal"
+  | "traits"
+  | "dreamJob"
+  | "dreamDistrict"
+  | "customDreamJob"
 > {
   return {
     presetAnimal: "rabbit",
     customAnimal: "",
     traits: [],
-    dreamJob: "artist",
+    dreamJob: "Artist",
+    dreamDistrict: "artist",
     customDreamJob: "",
   };
 }
@@ -227,43 +234,27 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
           </div>
 
           <label className="block font-serif text-sm text-amber-900/80">
-            Dream role (preset)
+            Dream path
             <select
               className="mt-1 w-full rounded-xl border border-amber-900/20 bg-white px-3 py-2.5 font-serif text-amber-950"
-              value={visitor.customDreamJob.trim() ? "" : visitor.dreamJob ?? ""}
+              value={visitor.dreamJob ?? ""}
               onChange={(e) => {
                 const v = e.target.value;
                 if (!v) return;
                 setVisitor((s) => ({
                   ...s,
                   dreamJob: v as DreamJob,
+                  dreamDistrict: getDreamDistrictForJob(v),
                   customDreamJob: "",
                 }));
               }}
             >
-              {DREAM_JOBS.map((j) => (
-                <option key={j.id} value={j.id}>
+              {REPRESENTATIVE_DREAM_JOBS.map((j) => (
+                <option key={j.key} value={j.label}>
                   {j.label}
                 </option>
               ))}
             </select>
-          </label>
-
-          <label className="block font-serif text-sm text-amber-900/80">
-            Or describe your dream in your own words
-            <input
-              type="text"
-              className="mt-1 w-full rounded-xl border border-amber-900/20 bg-white px-3 py-2.5 font-serif text-amber-950"
-              value={visitor.customDreamJob}
-              onChange={(e) =>
-                setVisitor((s) => ({
-                  ...s,
-                  dreamJob: null,
-                  customDreamJob: e.target.value,
-                }))
-              }
-              placeholder="Optional — overrides preset when filled"
-            />
           </label>
 
           {animalHint ? (

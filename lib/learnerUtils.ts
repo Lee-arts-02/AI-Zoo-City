@@ -7,7 +7,7 @@ import {
   traitsForModel,
   TRAIT_SYNONYMS,
 } from "@/data/modelTraits";
-import type { DreamJob, LearnerProfile, PresetAnimal } from "@/types/game";
+import type { DreamJob, JobId, LearnerProfile, PresetAnimal } from "@/types/game";
 
 /** Step 1 quick-pick grid — subset of the full dataset (see `data/zooAnimalDataset.ts`). */
 export const PRESET_ANIMALS: {
@@ -40,35 +40,195 @@ export const SUGGESTED_TRAITS = [
 
 const KNOWN_TRAIT_KEYS = Object.keys(traitWeights);
 
-export const DREAM_JOBS: { id: DreamJob; label: string; emoji: string }[] = [
-  { id: "artist", label: "Artist", emoji: "🎨" },
-  { id: "engineer", label: "Engineer", emoji: "⚙️" },
-  { id: "manager", label: "Manager", emoji: "📋" },
-  { id: "community", label: "Community", emoji: "🤝" },
+export type DreamJobOption = {
+  key: string;
+  label: string;
+  aliases?: string[];
+  district: JobId;
+  emoji?: string;
+  description?: string;
+};
+
+export const REPRESENTATIVE_DREAM_JOBS: DreamJobOption[] = [
+  {
+    key: "Artist",
+    label: "Artist",
+    district: "artist",
+    emoji: "🎨",
+    description: "create, perform, design",
+  },
+  {
+    key: "Engineer",
+    label: "Engineer",
+    district: "engineer",
+    emoji: "⚙️",
+    description: "build, invent, solve",
+  },
+  {
+    key: "Supporter",
+    label: "Supporter",
+    district: "community",
+    emoji: "🤝",
+    description: "help, teach, care",
+  },
+  {
+    key: "Manager",
+    label: "Manager",
+    district: "manager",
+    emoji: "📋",
+    description: "lead, organize, plan",
+  },
 ];
 
+export const INTERNAL_DREAM_JOB_DATABASE: DreamJobOption[] = [
+  { key: "Artist", label: "Artist", district: "artist" },
+  { key: "Painter", label: "Painter", district: "artist" },
+  { key: "Musician", label: "Musician", district: "artist" },
+  { key: "Dancer", label: "Dancer", district: "artist" },
+  {
+    key: "Filmmaker",
+    label: "Filmmaker",
+    aliases: ["Film Maker", "Movie Maker", "Movie Director"],
+    district: "artist",
+  },
+  { key: "Designer", label: "Designer", district: "artist" },
+  { key: "Writer", label: "Writer", district: "artist" },
+  { key: "Actor", label: "Actor", district: "artist" },
+  { key: "Animator", label: "Animator", district: "artist" },
+  { key: "Illustrator", label: "Illustrator", district: "artist" },
+  { key: "Photographer", label: "Photographer", district: "artist" },
+  { key: "Singer", label: "Singer", district: "artist" },
+  { key: "Composer", label: "Composer", district: "artist" },
+  { key: "Fashion Designer", label: "Fashion Designer", district: "artist" },
+  { key: "Game Artist", label: "Game Artist", district: "artist" },
+  { key: "Engineer", label: "Engineer", district: "engineer" },
+  { key: "Builder", label: "Builder", district: "engineer" },
+  { key: "Robot Engineer", label: "Robot Engineer", district: "engineer" },
+  { key: "Inventor", label: "Inventor", district: "engineer" },
+  { key: "Bridge Designer", label: "Bridge Designer", district: "engineer" },
+  {
+    key: "Game Developer",
+    label: "Game Developer",
+    aliases: ["Video Game Developer"],
+    district: "engineer",
+  },
+  { key: "Programmer", label: "Programmer", district: "engineer" },
+  { key: "Software Developer", label: "Software Developer", district: "engineer" },
+  { key: "Architect", label: "Architect", district: "engineer" },
+  { key: "Mechanic", label: "Mechanic", district: "engineer" },
+  { key: "Scientist", label: "Scientist", district: "engineer" },
+  { key: "Data Scientist", label: "Data Scientist", district: "engineer" },
+  { key: "AI Engineer", label: "AI Engineer", aliases: ["A I Engineer"], district: "engineer" },
+  { key: "Electrician", label: "Electrician", district: "engineer" },
+  { key: "Machine Designer", label: "Machine Designer", district: "engineer" },
+  { key: "Supporter", label: "Supporter", district: "community" },
+  { key: "Teacher", label: "Teacher", district: "community" },
+  { key: "Doctor", label: "Doctor", district: "community" },
+  { key: "Nurse", label: "Nurse", district: "community" },
+  { key: "Caregiver", label: "Caregiver", district: "community" },
+  { key: "Counselor", label: "Counselor", district: "community" },
+  { key: "Firefighter", label: "Firefighter", district: "community" },
+  { key: "Social Worker", label: "Social Worker", district: "community" },
+  { key: "Therapist", label: "Therapist", district: "community" },
+  { key: "Community Helper", label: "Community Helper", district: "community" },
+  { key: "Veterinarian", label: "Veterinarian", aliases: ["Vet"], district: "community" },
+  { key: "Librarian", label: "Librarian", district: "community" },
+  { key: "Coach", label: "Coach", district: "community" },
+  { key: "Helper", label: "Helper", district: "community" },
+  { key: "Volunteer", label: "Volunteer", district: "community" },
+  { key: "Manager", label: "Manager", district: "manager" },
+  { key: "Team Leader", label: "Team Leader", district: "manager" },
+  { key: "City Planner", label: "City Planner", district: "manager" },
+  { key: "Shop Owner", label: "Shop Owner", district: "manager" },
+  { key: "Event Organizer", label: "Event Organizer", district: "manager" },
+  { key: "Project Manager", label: "Project Manager", district: "manager" },
+  { key: "Principal", label: "Principal", district: "manager" },
+  { key: "Mayor", label: "Mayor", district: "manager" },
+  { key: "Director", label: "Director", district: "manager" },
+  { key: "Producer", label: "Producer", district: "manager" },
+  { key: "Entrepreneur", label: "Entrepreneur", district: "manager" },
+  { key: "Business Owner", label: "Business Owner", district: "manager" },
+  { key: "Coordinator", label: "Coordinator", district: "manager" },
+  { key: "Organizer", label: "Organizer", district: "manager" },
+  { key: "Supervisor", label: "Supervisor", district: "manager" },
+];
+
+export const DREAM_JOBS: DreamJobOption[] = INTERNAL_DREAM_JOB_DATABASE;
+
+const LEGACY_DREAM_DISTRICTS: Record<string, JobId> = {
+  artist: "artist",
+  engineer: "engineer",
+  manager: "manager",
+  community: "community",
+};
+
+export const DREAM_DISTRICT_LABELS: Record<JobId, string> = {
+  artist: "Artist District",
+  engineer: "Engineer Quarter",
+  community: "Community Support",
+  manager: "Manager Center",
+};
+
+export const DREAM_PATH_LABELS: Record<JobId, string> = {
+  artist: "Artist",
+  engineer: "Engineer",
+  community: "Supporter",
+  manager: "Manager",
+};
+
+export function isRepresentativeDreamJobLabel(label: string | null | undefined): boolean {
+  if (!label) return false;
+  return REPRESENTATIVE_DREAM_JOBS.some((j) => j.label === label);
+}
+
+export function normalizeDreamJobInput(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function getDreamJobOption(key: string | null | undefined): DreamJobOption | null {
+  if (!key) return null;
+  const normalized = normalizeDreamJobInput(key);
+  return (
+    DREAM_JOBS.find((j) => {
+      if (normalizeDreamJobInput(j.key) === normalized) return true;
+      if (normalizeDreamJobInput(j.label) === normalized) return true;
+      return (j.aliases ?? []).some((alias) => normalizeDreamJobInput(alias) === normalized);
+    }) ?? null
+  );
+}
+
+export function matchDreamJobInput(input: string): DreamJobOption | null {
+  return getDreamJobOption(input);
+}
+
+export function getDreamDistrictForJob(key: string | null | undefined): JobId | null {
+  const option = getDreamJobOption(key);
+  if (option) return option.district;
+  if (key && LEGACY_DREAM_DISTRICTS[key]) return LEGACY_DREAM_DISTRICTS[key];
+  return null;
+}
+
 function dreamJobPhrase(job: DreamJob): string {
-  switch (job) {
-    case "artist":
-      return "an artist";
-    case "engineer":
-      return "an engineer";
-    case "manager":
-      return "a manager";
-    case "community":
-      return "a community helper";
-    default:
-      return "…";
-  }
+  const lower = job.toLowerCase();
+  const article = /^[aeiou]/.test(lower) ? "an" : "a";
+  return `${article} ${lower}`;
 }
 
 /**
  * Preset job id for narrative / comparison when the learner chose a custom dream string.
  * Maps keywords to the nearest category; defaults to artist.
  */
-export function getEffectiveDreamJob(learner: LearnerProfile): DreamJob {
-  if (learner.dreamJob) return learner.dreamJob;
-  const c = learner.customDreamJob.trim().toLowerCase();
+export function getEffectiveDreamJob(learner: LearnerProfile): JobId {
+  if (learner.dreamDistrict) return learner.dreamDistrict;
+  const presetDistrict = getDreamDistrictForJob(learner.dreamJob);
+  if (presetDistrict) return presetDistrict;
+  const c = (learner.customDreamJob.trim() || learner.dreamJob?.trim() || "").toLowerCase();
   if (!c) return "artist";
   if (/\b(manager|manage|lead|boss|director)\b/.test(c)) return "manager";
   if (/\b(engineer|engineering|build|code|robot|tech|program)\b/.test(c))
@@ -89,10 +249,7 @@ export function getDreamDisplayLabel(learner: LearnerProfile): string {
     return custom.charAt(0).toUpperCase() + custom.slice(1);
   }
   if (learner.dreamJob) {
-    return (
-      DREAM_JOBS.find((j) => j.id === learner.dreamJob)?.label ??
-      learner.dreamJob
-    );
+    return getDreamJobOption(learner.dreamJob)?.label ?? learner.dreamJob;
   }
   return "—";
 }
@@ -161,7 +318,8 @@ export function buildLearnerDescription(learner: LearnerProfile): string {
 export function isLearnerProfileComplete(learner: LearnerProfile): boolean {
   const hasAnimal = getResolvedAnimalKey(learner) !== null;
   const hasDream =
-    learner.dreamJob !== null || learner.customDreamJob.trim().length > 0;
+    (learner.dreamJob !== null && learner.dreamDistrict !== null) ||
+    learner.customDreamJob.trim().length > 0;
   const hasTrait = learner.traits.length >= 1;
   return hasAnimal && hasDream && hasTrait;
 }

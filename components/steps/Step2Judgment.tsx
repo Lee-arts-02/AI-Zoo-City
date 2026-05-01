@@ -43,6 +43,7 @@ export function Step2Judgment({
         c: learner.customAnimal.trim(),
         t: learner.traits,
         d: learner.dreamJob,
+        dd: learner.dreamDistrict,
         cd: learner.customDreamJob.trim(),
       }),
     [
@@ -50,6 +51,7 @@ export function Step2Judgment({
       learner.customAnimal,
       learner.traits,
       learner.dreamJob,
+      learner.dreamDistrict,
       learner.customDreamJob,
     ],
   );
@@ -181,7 +183,7 @@ export function Step2Judgment({
               Analyzing your profile…
             </p>
             <p className="mb-3 text-center font-serif text-sm text-sky-800/80">
-              Tokens from your description:
+              Full sentence being checked:
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {tokens.map((word, i) => (

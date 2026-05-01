@@ -23,7 +23,7 @@ export function Step7PredictionReveal({ onContinue }: { onContinue: () => void }
       {payload.predictionReady ? (
         <PredictionComparison
           dreamLabel={payload.dreamLabel}
-          dreamJobId={payload.dreamJobId}
+          dreamDistrictId={payload.dreamDistrictId}
           originalTop={payload.originalTop}
           currentTop={payload.currentTop}
           explanation={payload.explanation}

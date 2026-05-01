@@ -18,7 +18,7 @@ export type Step7DrawRobotPromptProps = {
 };
 
 /**
- * Step 7 draw phase: wide sky bubble on top, robot below with gentle float — typewriter line stays after complete.
+ * Step 7 draw phase: wide sky bubble on top, larger stable robot below.
  */
 export function Step7DrawRobotPrompt({ lineKey }: Step7DrawRobotPromptProps) {
   const [displayed, setDisplayed] = useState("");
@@ -70,13 +70,13 @@ export function Step7DrawRobotPrompt({ lineKey }: Step7DrawRobotPromptProps) {
       </div>
 
       <div className="flex justify-center pt-1">
-        <div className="animate-step7-draw-robot-float motion-reduce:animate-none">
+        <div>
           <Image
             src="/robot.png"
             alt=""
-            width={102}
-            height={102}
-            className="h-[4.75rem] w-auto object-contain drop-shadow-md sm:h-[5.5rem]"
+            width={153}
+            height={153}
+            className="h-[7.1rem] w-auto object-contain drop-shadow-md sm:h-[8.25rem]"
           />
         </div>
       </div>

@@ -27,7 +27,7 @@ export type PredictionComparisonPayload =
   | {
       predictionReady: true;
       dreamLabel: string;
-      dreamJobId: JobId;
+      dreamDistrictId: JobId;
       originalTop: JobId;
       currentTop: RetrainedPredictionId;
       explanation: string;
@@ -42,7 +42,7 @@ export function buildPredictionComparisonPayload(state: GameState): PredictionCo
 
   const placements = ensurePlacements(state.progress.redesignPlacements);
   const freelancerShare = computeFreelancerShare(placements);
-  const dreamJobId = getEffectiveDreamJob(learner);
+  const dreamDistrictId = getEffectiveDreamJob(learner);
 
   const judgmentInput: JudgmentInput = {
     presetAnimal: learner.presetAnimal,
@@ -51,7 +51,7 @@ export function buildPredictionComparisonPayload(state: GameState): PredictionCo
   };
   const cityInput: CityEvidenceInput = {
     ...judgmentInput,
-    dreamJob: dreamJobId,
+    dreamJob: dreamDistrictId,
   };
   const cityEvidence = buildCombinedCityEvidence(placements, cityInput);
   const beforeJ = computeJudgment(judgmentInput);
@@ -62,7 +62,7 @@ export function buildPredictionComparisonPayload(state: GameState): PredictionCo
     freelancerShare,
   );
   const explanation = buildPredictionExplanation(
-    dreamJobId,
+    dreamDistrictId,
     beforeJ.topJob,
     pack.topJob,
     cityEvidence,
@@ -72,7 +72,7 @@ export function buildPredictionComparisonPayload(state: GameState): PredictionCo
   return {
     predictionReady: true,
     dreamLabel: getDreamDisplayLabel(learner),
-    dreamJobId,
+    dreamDistrictId,
     originalTop: beforeJ.topJob,
     currentTop: pack.topJob,
     explanation,

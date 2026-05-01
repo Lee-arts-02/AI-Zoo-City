@@ -4,7 +4,7 @@ import { JOB_DISPLAY } from "@/lib/aiModel";
 import { wordsFromSentence, wordMatchesKeyTokenExpanded } from "@/lib/tokenizeSentence";
 import type { Step4Token } from "@/lib/step4Tokens";
 import { JOB_IDS, toPercentages } from "@/lib/step4Model";
-import type { DreamJob, JobId } from "@/types/game";
+import type { JobId } from "@/types/game";
 import { useEffect, useId, useMemo, useState } from "react";
 import { jobRadialXY, JOB_NODE_COLORS } from "./jobRadialLayout";
 
@@ -579,7 +579,7 @@ export function Stage4ReasoningReplayVisual({
   sentence: string;
   tokens: Step4Token[];
   fusedPct: Record<JobId, number>;
-  dreamJob: DreamJob;
+  dreamJob: JobId;
   aiTopJob: JobId;
   animalLabel: string;
   traitsLine: string;
