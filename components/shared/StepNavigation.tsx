@@ -6,6 +6,9 @@ import { useSoftGateFeedback } from "@/components/shared/useSoftGateFeedback";
 import { STEP3_SOFT_GATE_OPEN_MACHINE_MESSAGE } from "@/lib/step3SortingGate";
 import { TOTAL_STEPS, useGameState } from "@/lib/gameState";
 
+// Demo On/Off: set to true to let Step 3's Next button jump directly to Step 4.
+const STEP3_NEXT_STEP_DEMO_MODE = true;
+
 export type StepNavigationProps = {
   /** When on story step 3, go back to intro step 2 (AI judgment) instead of global step 2. */
   onBackFromStoryStart?: () => void;
@@ -48,7 +51,11 @@ export function StepNavigation({ onBackFromStoryStart }: StepNavigationProps) {
         <button
           type="button"
           onClick={() => {
-            if (step === 3 && !state.progress.aiExplained) {
+            if (
+              step === 3 &&
+              !state.progress.aiExplained &&
+              !STEP3_NEXT_STEP_DEMO_MODE
+            ) {
               if (!primaryActionsUnlocked) {
                 trigger();
                 return;
@@ -63,7 +70,7 @@ export function StepNavigation({ onBackFromStoryStart }: StepNavigationProps) {
           }}
           disabled={!canGoNext}
           title={
-            step === 3 && !state.progress.aiExplained
+            step === 3 && !state.progress.aiExplained && !STEP3_NEXT_STEP_DEMO_MODE
               ? primaryActionsUnlocked
                 ? "Go to the next chapter when you’re ready."
                 : "Finish sorting and follow the robot guide on this page first."
