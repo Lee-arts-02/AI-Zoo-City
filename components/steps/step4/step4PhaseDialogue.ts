@@ -38,16 +38,16 @@ export function tokWhyFeedback(q: string | null): string {
 }
 
 export function patFeedback(q: string | null): string {
-  if (q === "seen") {
-    return "Exactly! It matters when the system has seen it show up like this before.";
+  if (q === "pattern") {
+    return "Exactly. The machine does not know you the way a person would. It uses your words as clues and matches them to patterns from examples.";
   }
-  if (q === "magic") {
-    return "Haha, not magic 😄 It changes the guess because the system has seen patterns like this before.";
+  if (q === "understood") {
+    return "Not quite. A friend or teacher can know your story, but the machine only works with the words you gave it and the patterns it has seen before.";
   }
-  if (q === "whole") {
-    return "Not quite. One piece isn't the whole story — but it can still nudge the guess if the system has seen it connected to certain roles before."
+  if (q === "mixed") {
+    return "It can feel a little like both, because the machine responds to your words. But it is still using tokens as clues, not truly understanding who you are.";
   }
-  return "What the system has seen before can change how it leans.";
+  return "The machine uses tokens as clues, not personal understanding.";
 }
 
 export function oneClueFeedback(q: string | null): string {

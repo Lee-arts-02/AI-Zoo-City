@@ -16,6 +16,7 @@ import {
 import { toDialogueTypingParts } from "@/lib/textParser";
 import {
   oneClueFeedback,
+  patFeedback,
   tokWhyFeedback,
   welcomeFeedbackText,
   type DialogueKind,
@@ -310,7 +311,7 @@ export function Step4RobotPanel({
           kind: "narration" as const,
           key: "3-0",
           text:
-            "Your sentence has been split into tokens.|||One token alone does not mean much. What matters is <b>the pattern</b> the system remembers from older examples.",
+            "The machine does not really know who you are like a friend or teacher does.|||It can only work with the words you give it.|||So it breaks your sentence into tokens.|||These tokens become the clues the machine uses to learn from you.",
         };
       if (beat === 1)
         return {
@@ -328,9 +329,9 @@ export function Step4RobotPanel({
         };
       if (beat === 3)
         return {
-          kind: "narration" as const,
-          key: "3-3",
-          text: "It is following the <b>old patterns</b>, not knowing your whole story.",
+          kind: "concept" as const,
+          key: `3-3-${qPattern ?? "x"}`,
+          text: patFeedback(qPattern),
         };
       return { text: "", kind: "narration" as const, key: "3-fallback" };
     }
@@ -489,7 +490,7 @@ export function Step4RobotPanel({
     }
 
     return { text: "", kind: "narration" as const, key: "fallback" };
-  }, [stage, beat, tokens, qWelcome, qTokWhy, qOne, qCity2, learnerFirstName]);
+  }, [stage, beat, tokens, qWelcome, qTokWhy, qPattern, qOne, qCity2, learnerFirstName]);
 
   const dialogueLineKey = useMemo(
     () => [stage, beat, dialogue.key].join("|"),
