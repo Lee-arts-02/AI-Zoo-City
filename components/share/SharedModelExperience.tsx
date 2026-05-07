@@ -6,6 +6,7 @@ import {
   type ShareSnapshotV1,
 } from "@/lib/shareSnapshot";
 import { ShareVisitorOutcome } from "@/components/share/ShareVisitorOutcome";
+import { AnimalProfileCard } from "@/components/shared/AnimalProfileCard";
 import { inferVisitorWithSharedModel } from "@/lib/shareVisitorInference";
 import {
   formatLearnerNameForDisplay,
@@ -15,8 +16,13 @@ import {
   getResolvedAnimalKey,
   PRESET_ANIMALS,
   REPRESENTATIVE_DREAM_JOBS,
-  SUGGESTED_TRAITS,
 } from "@/lib/learnerUtils";
+import {
+  buildLearnerProfileCardData,
+  DIET_OPTIONS,
+  getDefaultProfileFeatures,
+  SIZE_OPTIONS,
+} from "@/lib/profileFeatures";
 import type { DreamJob, LearnerProfile, PresetAnimal } from "@/types/game";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -27,7 +33,8 @@ function defaultVisitorState(): Pick<
   LearnerProfile,
   | "presetAnimal"
   | "customAnimal"
-  | "traits"
+  | "diet"
+  | "size"
   | "dreamJob"
   | "dreamDistrict"
   | "customDreamJob"
@@ -35,7 +42,8 @@ function defaultVisitorState(): Pick<
   return {
     presetAnimal: "rabbit",
     customAnimal: "",
-    traits: [],
+    diet: "Herbivore",
+    size: "Small",
     dreamJob: "Artist",
     dreamDistrict: "artist",
     customDreamJob: "",
@@ -97,6 +105,7 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
     const partial: LearnerProfile = {
       name: "",
       ...visitor,
+      traits: [],
       description: "",
       drawingDataUrl: null,
     };
@@ -114,6 +123,7 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
     const v: LearnerProfile = {
       name: "",
       ...visitor,
+      traits: [],
       description: "",
       drawingDataUrl: null,
     };
@@ -124,20 +134,23 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
     const v: LearnerProfile = {
       name: "",
       ...visitor,
+      traits: [],
       description: "",
       drawingDataUrl: null,
     };
     return getDreamDisplayLabel(v);
   }, [visitor]);
 
-  const toggleTrait = (t: string) => {
-    setVisitor((prev) => {
-      const set = new Set(prev.traits);
-      if (set.has(t)) set.delete(t);
-      else if (set.size < 3) set.add(t);
-      return { ...prev, traits: [...set].sort() };
-    });
-  };
+  const visitorProfileCard = useMemo(() => {
+    const v: LearnerProfile = {
+      name: "",
+      ...visitor,
+      traits: [],
+      description: "",
+      drawingDataUrl: null,
+    };
+    return buildLearnerProfileCardData(v);
+  }, [visitor]);
 
   const hasCustom = visitor.customAnimal.trim().length > 0 && visitor.presetAnimal === null;
 
@@ -145,14 +158,14 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
     <div className="mx-auto w-full max-w-xl px-4 py-10 sm:py-14">
       <header className="text-center">
         <p className="font-serif text-sm font-medium uppercase tracking-[0.2em] text-amber-800/75">
-          Shared model
+          Shared classifier
         </p>
         <h1 className="mt-2 font-serif text-3xl font-bold text-amber-950 sm:text-4xl">
           {sharePageTitle}
         </h1>
         <p className="mt-3 font-serif text-base leading-relaxed text-amber-900/85">
-          This city was redesigned by another player. Their choices changed how the model reads new
-          stories — including yours.
+          This city was redesigned by another player. Their choices changed how
+          the classifier uses new animal profiles — including yours.
         </p>
       </header>
 
@@ -162,7 +175,7 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
           className="mt-10 space-y-8 rounded-3xl border border-amber-900/12 bg-white/90 p-6 shadow-inner"
         >
           <p className="text-center font-serif text-lg text-amber-950">
-            Try a quick identity — then see what this Zoo City suggests.
+            Try a quick animal profile — then see how this Zoo City classifies it.
           </p>
 
           <label className="block font-serif text-sm text-amber-900/80">
@@ -176,10 +189,13 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
                   setVisitor((s) => ({ ...s, presetAnimal: null }));
                   return;
                 }
+                const defaults = getDefaultProfileFeatures(v);
                 setVisitor((s) => ({
                   ...s,
                   presetAnimal: v as PresetAnimal,
                   customAnimal: "",
+                  diet: defaults?.diet ?? s.diet,
+                  size: defaults?.size ?? s.size,
                 }));
               }}
             >
@@ -191,6 +207,49 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
               ))}
             </select>
           </label>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <p className="font-serif text-sm font-medium text-amber-900/85">Diet</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {DIET_OPTIONS.map((diet) => (
+                  <button
+                    key={diet}
+                    type="button"
+                    onClick={() => setVisitor((s) => ({ ...s, diet }))}
+                    className={[
+                      "rounded-full border px-3 py-1 font-serif text-sm",
+                      visitor.diet === diet
+                        ? "border-sky-700 bg-sky-100 text-sky-950"
+                        : "border-amber-900/15 bg-white text-amber-900/80",
+                    ].join(" ")}
+                  >
+                    {diet}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="font-serif text-sm font-medium text-amber-900/85">Size</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {SIZE_OPTIONS.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => setVisitor((s) => ({ ...s, size }))}
+                    className={[
+                      "rounded-full border px-3 py-1 font-serif text-sm",
+                      visitor.size === size
+                        ? "border-sky-700 bg-sky-100 text-sky-950"
+                        : "border-amber-900/15 bg-white text-amber-900/80",
+                    ].join(" ")}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
           <label className="block font-serif text-sm text-amber-900/80">
             Or custom animal
@@ -208,30 +267,6 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
               placeholder="e.g. Red panda"
             />
           </label>
-
-          <div>
-            <p className="font-serif text-sm font-medium text-amber-900/85">Traits (up to 3)</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {SUGGESTED_TRAITS.map((t) => {
-                const on = visitor.traits.includes(t);
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleTrait(t)}
-                    className={[
-                      "rounded-full border px-3 py-1 font-serif text-sm capitalize",
-                      on
-                        ? "border-amber-700 bg-amber-200 text-amber-950"
-                        : "border-amber-900/15 bg-white text-amber-900/80",
-                    ].join(" ")}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           <label className="block font-serif text-sm text-amber-900/80">
             Dream path
@@ -257,6 +292,13 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
             </select>
           </label>
 
+          <AnimalProfileCard
+            profile={visitorProfileCard}
+            title="Visitor Animal Profile"
+            compact
+            className="mx-auto max-w-sm border-2 shadow-none"
+          />
+
           {animalHint ? (
             <p className="text-center font-serif text-sm text-amber-900/85">
               Zoo City has not detected that animal yet. Choose a listed animal or type one
@@ -268,7 +310,7 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
             type="submit"
             className="w-full rounded-2xl border-2 border-amber-800 bg-amber-400 py-3 font-serif text-lg font-semibold text-amber-950 shadow-sm transition hover:bg-amber-300"
           >
-            See what this city suggests
+            Classify my profile
           </button>
         </form>
       ) : (
@@ -286,7 +328,7 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
               </p>
               <p className="font-serif text-sm text-amber-900/80">
                 Different people shape different systems. Build your own Zoo City and teach the
-                model your values.
+                classifier your values.
               </p>
               <Link
                 href={gameHref}
@@ -304,7 +346,7 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
               }}
               className="w-full rounded-xl border border-amber-900/20 bg-white py-2.5 font-serif text-sm font-medium text-amber-950 hover:bg-amber-50"
             >
-              Try another identity
+              Try another profile
             </button>
           </div>
         )
@@ -312,7 +354,7 @@ function SharedModelInner({ snapshot }: { snapshot: ShareSnapshotV1 }) {
 
       <footer className="mt-12 border-t border-amber-900/10 pt-8 text-center">
         <p className="font-serif text-sm text-amber-900/75">
-          This experience uses {hostDisplay}&apos;s shared model snapshot — not the only way a
+          This experience uses {hostDisplay}&apos;s shared classifier snapshot — not the only way a
           city could work.
         </p>
         <Link href={gameHref} className="mt-3 inline-block font-serif text-sm font-semibold text-amber-800 underline-offset-2 hover:underline">

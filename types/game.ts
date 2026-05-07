@@ -15,6 +15,8 @@ export type RetrainedPredictionId = JobId | "freelancer";
 export type PresetAnimal = ZooCityAnimalKey;
 
 export type DreamJob = string;
+export type AnimalDiet = "Carnivore" | "Herbivore" | "Omnivore";
+export type AnimalSize = "Small" | "Medium" | "Large";
 
 export type LearnerProfile = {
   /** Learner's own name (optional); trimmed in UI, max length enforced in inputs. */
@@ -23,8 +25,12 @@ export type LearnerProfile = {
   presetAnimal: PresetAnimal | null;
   /** Custom animal name when not using a preset (trimmed for display). */
   customAnimal: string;
-  /** Up to 3 traits (known keys from the model, normalized lowercase). */
+  /** Legacy field kept for older state/share payloads; not used by the current classifier. */
   traits: string[];
+  /** Classifier feature: animal diet, usually auto-filled from the supported animal dataset. */
+  diet: AnimalDiet | null;
+  /** Classifier feature: animal size, usually auto-filled from the supported animal dataset. */
+  size: AnimalSize | null;
   /** Concrete learner-facing dream job label, mapped to dreamDistrict. */
   dreamJob: DreamJob | null;
   /** District used for prediction comparison and city-level logic. */

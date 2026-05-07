@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Short beat between Step 5 save and Step 6 — suggests the model updated from learner data.
+ * Short beat between Step 5 save and Step 6 — suggests the classifier updated from learner labels.
  */
 export function Step5RetrainingOverlay() {
   return (
@@ -21,10 +21,10 @@ export function Step5RetrainingOverlay() {
           <span className="h-8 w-8 animate-spin rounded-full border-2 border-violet-200 border-t-transparent" aria-hidden />
         </div>
         <p className="font-serif text-xl font-semibold leading-snug text-white drop-shadow-md sm:text-2xl">
-          Your AI model is retrained…
+          Updating training labels…
         </p>
         <p className="mt-3 font-serif text-sm text-violet-100/85">
-          The city is learning new patterns from your choices.
+          The classifier is learning from the profile labels you changed.
         </p>
         <div className="mt-8 h-1.5 w-56 overflow-hidden rounded-full bg-white/10">
           <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-r from-violet-400 via-fuchsia-300 to-amber-200" />

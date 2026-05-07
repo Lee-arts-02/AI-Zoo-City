@@ -1,25 +1,7 @@
 "use client";
 
-import type { VisitorInferenceResult, VisitorProbabilityRow } from "@/lib/shareVisitorInference";
+import type { VisitorInferenceResult } from "@/lib/shareVisitorInference";
 import { useState } from "react";
-
-function ProbabilityBar({ row }: { row: VisitorProbabilityRow }) {
-  const width = Math.min(100, Math.max(0, row.pct));
-  return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-2 font-serif text-sm text-amber-950">
-        <span className="font-medium">{row.label}</span>
-        <span className="tabular-nums text-amber-900/85">{row.pct}%</span>
-      </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-amber-100/90 ring-1 ring-amber-900/8">
-        <div
-          className="h-full min-w-[2px] rounded-full bg-gradient-to-r from-amber-500 to-amber-600 transition-[width]"
-          style={{ width: `${width}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export type ShareVisitorOutcomeProps = {
   result: VisitorInferenceResult;
@@ -52,7 +34,7 @@ export function ShareVisitorOutcome({ result, visitorLabel, dreamLabel }: ShareV
             </span>
             {!result.approved ? (
               <p className="mt-2 font-serif text-xs font-medium text-rose-900/75">
-                Rejected by this Zoo City model
+                No strong classification in this Zoo City
               </p>
             ) : (
               <p className="mt-3 font-serif text-sm font-semibold text-emerald-900/85">
@@ -88,7 +70,7 @@ export function ShareVisitorOutcome({ result, visitorLabel, dreamLabel }: ShareV
           aria-controls="share-model-reasoning-panel"
           id="share-model-reasoning-toggle"
         >
-          {detailsOpen ? "Hide details" : "See model reasoning"}
+          {detailsOpen ? "Hide details" : "See classifier reasoning"}
           <span
             className={`inline-block text-amber-700 transition-transform ${detailsOpen ? "rotate-180" : ""}`}
             aria-hidden
@@ -115,19 +97,17 @@ export function ShareVisitorOutcome({ result, visitorLabel, dreamLabel }: ShareV
 
             <div className="space-y-3">
               <p className="font-serif text-xs font-semibold uppercase tracking-wide text-amber-800/80">
-                Model probabilities
+                Matched pattern details
               </p>
-              <div className="space-y-3.5">
-                {result.probabilities.map((row) => (
-                  <ProbabilityBar key={row.id} row={row} />
-                ))}
-              </div>
+              <p className="rounded-xl bg-amber-50/90 px-3 py-2.5 font-serif text-xs leading-relaxed text-amber-950/90 ring-1 ring-amber-900/8">
+                The shared classifier uses size and diet, then checks the labels this Zoo City learned from.
+              </p>
             </div>
 
             <p className="rounded-xl bg-amber-50/90 px-3 py-2.5 font-serif text-xs leading-relaxed text-amber-950/90 ring-1 ring-amber-900/8">
               {result.approved
-                ? "Approved means one path had enough probability mass and enough lead over the runner-up for this shared model to call a clear match."
-                : "Rejected means no path reached that bar — the distribution stayed too close to pick one district with confidence."}
+                ? "Approved means this shared classifier found a clear size-and-diet pattern for one district label."
+                : "Rejected means this shared classifier did not find a clear size-and-diet pattern for one district label."}
             </p>
           </div>
         ) : null}

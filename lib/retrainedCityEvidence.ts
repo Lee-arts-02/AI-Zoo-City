@@ -1,12 +1,13 @@
 import { STEP5_ANIMALS } from "@/data/step5Animals";
 import type { JudgmentInput } from "@/lib/aiModel";
 import { buildInitialStep5Placements } from "@/lib/step5FromCityDistribution";
+import { getDefaultProfileFeatures } from "@/lib/profileFeatures";
 import type { JobId } from "@/types/game";
 import type { RedesignRegionId } from "@/types/city";
 
 const JOB_IDS: JobId[] = ["artist", "engineer", "manager", "community"];
 
-/** Profile signals for city + NPC “story” resonance — includes dream for narrative fit, not core judgment tokens. */
+/** Profile signals for city label matching — dream is for comparison, not a classifier feature. */
 export type CityEvidenceInput = JudgmentInput & { dreamJob: JobId };
 
 /**
@@ -30,24 +31,6 @@ function regionJobAffinity(region: RedesignRegionId): Record<JobId, number> {
   }
 }
 
-function traitOverlap(animalTraits: string[], learnerTraits: string[]): number {
-  const set = new Set(learnerTraits.map((t) => t.toLowerCase()));
-  let n = 0;
-  for (const t of animalTraits) {
-    if (set.has(t.toLowerCase())) n += 1;
-  }
-  return n;
-}
-
-function dreamResonance(animalDream: JobId, learnerDream: JobId): number {
-  return animalDream === learnerDream ? 1.32 : 1;
-}
-
-function identityResonance(animalId: string, preset: string | null): number {
-  if (!preset) return 1;
-  return animalId === preset ? 1.18 : 1;
-}
-
 /** Redesign moved this animal vs Step 3 baseline — strengthens “pattern shift” learning. */
 function patternShiftMultiplier(
   animalId: string,
@@ -62,8 +45,8 @@ function patternShiftMultiplier(
 }
 
 /**
- * Combined possibility vector from the redesigned city: each placement contributes
- * weighted evidence (traits + dream + identity + district story + shift from old layout).
+ * Combined city evidence from the redesigned city: each placement contributes
+ * size/diet evidence plus updated labels.
  * This is NOT raw district population counts.
  */
 export function buildCombinedCityEvidence(
@@ -83,13 +66,12 @@ export function buildCombinedCityEvidence(
     if (!region) continue;
 
     const aff = regionJobAffinity(region);
-    const overlap = traitOverlap(a.traits, input.traits);
-    const traitBundle =
-      1 + overlap * 0.26 + Math.min(a.traits.length, 4) * 0.035;
+    const defaults = getDefaultProfileFeatures(a.animalType ?? a.id);
+    const dietMatch = input.diet && input.diet === (a.diet ?? defaults?.diet);
+    const sizeMatch = input.size && input.size === (a.size ?? defaults?.size);
+    const featureBundle = dietMatch && sizeMatch ? 1.7 : dietMatch || sizeMatch ? 1.25 : 0.55;
     const storyWeight =
-      traitBundle *
-      dreamResonance(a.dreamJob, input.dreamJob) *
-      identityResonance(a.id, input.presetAnimal) *
+      featureBundle *
       patternShiftMultiplier(a.id, region, baseline);
 
     for (const j of JOB_IDS) {
@@ -121,8 +103,7 @@ export function topJobFromEvidence(evidence: Record<JobId, number>): JobId {
 }
 
 /**
- * How much Freelancer Hub acts as a learning expansion for this learner (trait overlap
- * in the hub), scaled 0–1. Used alongside hub share, not as a raw headcount.
+ * How much Freelancer Hub acts as a learning expansion for this learner's size/diet pattern.
  */
 export function freelancerHubLearningSignal(
   placements: Record<string, RedesignRegionId>,
@@ -132,8 +113,10 @@ export function freelancerHubLearningSignal(
   let n = 0;
   for (const a of STEP5_ANIMALS) {
     if (placements[a.id] !== "freelancer") continue;
-    const o = traitOverlap(a.traits, input.traits);
-    sum += o / Math.max(2, a.traits.length);
+    const defaults = getDefaultProfileFeatures(a.animalType ?? a.id);
+    const dietMatch = input.diet && input.diet === (a.diet ?? defaults?.diet);
+    const sizeMatch = input.size && input.size === (a.size ?? defaults?.size);
+    sum += dietMatch && sizeMatch ? 1 : dietMatch || sizeMatch ? 0.5 : 0;
     n += 1;
   }
   if (n === 0) return 0;

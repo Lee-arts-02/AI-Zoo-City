@@ -19,6 +19,8 @@ const emptyLearner: LearnerProfile = {
   presetAnimal: null,
   customAnimal: "",
   traits: [],
+  diet: null,
+  size: null,
   dreamJob: null,
   dreamDistrict: null,
   customDreamJob: "",

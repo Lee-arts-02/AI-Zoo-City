@@ -20,7 +20,7 @@ export function buildLightStep6Insights(
 
   if (freelancer >= 1) {
     cards.push({
-      title: "New possibilities",
+      title: "New paths",
       body:
         freelancer >= 2
           ? "Some animals now belong in a path the old city didn’t name."

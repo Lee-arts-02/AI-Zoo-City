@@ -175,17 +175,17 @@ export function Step4RobotBubbleReveal({
   return (
     <div className="relative max-w-full pl-1">
       <div
-        className="pointer-events-none absolute -left-1 top-6 z-0 h-4 w-4 rotate-45 rounded-sm border-l-2 border-b-2 border-violet-200/90 bg-violet-50/95 shadow-[-3px_3px_0_0_rgba(139,92,246,0.12)]"
+        className="pointer-events-none absolute -left-1 top-6 z-0 h-4 w-4 rotate-45 rounded-sm border-l-2 border-b-2 border-stone-200 bg-white shadow-[-3px_3px_0_0_rgba(120,113,108,0.12)]"
         aria-hidden
       />
       <div
-        className="relative z-10 rounded-3xl border-2 border-violet-200/90 bg-violet-50/95 pb-10 pl-5 pr-5 pt-4 shadow-[6px_6px_0_0_rgba(139,92,246,0.22)] backdrop-blur-sm"
+        className="relative z-10 rounded-3xl border-2 border-stone-200 bg-white pb-10 pl-5 pr-5 pt-4 shadow-[6px_6px_0_0_rgba(120,113,108,0.18)] backdrop-blur-sm"
         role="status"
         aria-live="polite"
       >
         <p
           className={[
-            "min-h-[3.25rem] whitespace-pre-wrap font-serif text-sm leading-relaxed text-violet-950 sm:min-h-[3.5rem] sm:text-[0.95rem] sm:leading-relaxed",
+            "min-h-[3.25rem] whitespace-pre-wrap font-serif text-sm leading-relaxed text-stone-950 sm:min-h-[3.5rem] sm:text-[0.95rem] sm:leading-relaxed",
             textClassName,
           ].join(" ")}
         >
@@ -214,7 +214,7 @@ export function Step4RobotBubbleReveal({
           )}
           {showCaret ? (
             <span
-              className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-violet-600 align-middle sm:h-5"
+              className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-stone-700 align-middle sm:h-5"
               aria-hidden
             />
           ) : null}
@@ -225,7 +225,7 @@ export function Step4RobotBubbleReveal({
               type="button"
               onClick={onBack}
               disabled={backDisabled || isTyping}
-              className="rounded-md px-2 py-1 font-sans text-[0.65rem] font-medium uppercase tracking-wide text-violet-500/95 underline decoration-violet-300/80 underline-offset-2 transition hover:text-violet-800 hover:decoration-violet-500 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-md px-2 py-1 font-sans text-[0.65rem] font-medium uppercase tracking-wide text-stone-600 underline decoration-stone-300 underline-offset-2 transition hover:text-stone-900 hover:decoration-stone-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               ← Back
             </button>
@@ -237,7 +237,7 @@ export function Step4RobotBubbleReveal({
               type="button"
               onClick={onContinue}
               disabled={continueDisabled || isTyping}
-              className="rounded-md px-2 py-1 font-sans text-[0.65rem] font-medium uppercase tracking-wide text-violet-600/90 underline decoration-violet-300/80 underline-offset-2 transition hover:text-violet-800 hover:decoration-violet-500 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-md px-2 py-1 font-sans text-[0.65rem] font-medium uppercase tracking-wide text-stone-700 underline decoration-stone-300 underline-offset-2 transition hover:text-stone-950 hover:decoration-stone-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {continueLabel} →
             </button>

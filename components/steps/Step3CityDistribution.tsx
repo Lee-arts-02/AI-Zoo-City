@@ -94,7 +94,7 @@ export default function Step3CityDistribution() {
 
   const [learnerDistrictColors, setLearnerDistrictColors] = useState<
     Record<string, DistrictId | null>
-  >({});
+  >(() => Object.fromEntries(starterTokens.map((t) => [t.instanceId, t.district])));
   const [learnerSortingVisible, setLearnerSortingVisible] = useState(true);
 
   const visited = state.progress.step3DistrictsVisited;

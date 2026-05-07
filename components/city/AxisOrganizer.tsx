@@ -185,10 +185,10 @@ export default function AxisOrganizer({
   };
 
   const quadrants = [
-    ["HL", "Herbivore · large"] as const,
-    ["HR", "Carnivore · large"] as const,
-    ["SL", "Herbivore · small"] as const,
-    ["SR", "Carnivore · small"] as const,
+    ["SL", "Small + Herbivore"] as const,
+    ["HL", "Large + Herbivore"] as const,
+    ["SR", "Small + Carnivore"] as const,
+    ["HR", "Large + Carnivore"] as const,
   ] as const;
 
   const renderToken = (t: OrganizerTokenDef) => (
@@ -213,7 +213,9 @@ export default function AxisOrganizer({
     >
       <div className="flex shrink-0 items-start justify-between gap-2 border-b border-teal-900/10 px-3 py-2">
         <div className="min-w-0 flex-1">
-          <p className="font-serif text-xs font-semibold text-teal-950 sm:text-sm">Sorting space</p>
+          <p className="font-serif text-xs font-semibold text-teal-950 sm:text-sm">
+            Old city pattern tool
+          </p>
         </div>
         <div className="hidden shrink-0 sm:block sm:scale-95">
           <OrganizerColorLegend />
@@ -233,11 +235,11 @@ export default function AxisOrganizer({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-10 pt-2">
         <p className="text-center text-[0.7rem] font-semibold uppercase tracking-wide text-stone-600">
-          Large
+          Herbivore
         </p>
         <div className="mt-1 flex gap-1.5">
           <p className="w-11 shrink-0 self-center text-right text-[0.65rem] font-semibold leading-tight text-stone-600 sm:w-12">
-            Herbivore
+            Small
           </p>
           <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
             {quadrants.map(([qid, title]) => {
@@ -267,11 +269,11 @@ export default function AxisOrganizer({
             })}
           </div>
           <p className="w-11 shrink-0 self-center text-[0.65rem] font-semibold leading-tight text-stone-600 sm:w-12">
-            Carnivore
+            Large
           </p>
         </div>
         <p className="mt-1 text-center text-[0.7rem] font-semibold uppercase tracking-wide text-stone-600">
-          Small
+          Carnivore
         </p>
 
         <div
@@ -288,6 +290,15 @@ export default function AxisOrganizer({
 
         {revealActivated ? (
           <div className="mt-3 space-y-2">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-2 font-serif text-[0.72rem] leading-relaxed text-emerald-950">
+              <p className="font-bold">Old city pattern found</p>
+              <ul className="mt-1 list-disc space-y-1 pl-4">
+                <li>Small + herbivore animals were often placed in Artist District.</li>
+                <li>Small + carnivore animals were often placed in Engineer Quarter.</li>
+                <li>Large + herbivore animals were often placed in Community Support.</li>
+                <li>Large + carnivore animals were often placed in Manager Center.</li>
+              </ul>
+            </div>
             <button
               type="button"
               onClick={() => setLearnerSortingVisible((v) => !v)}
@@ -300,7 +311,7 @@ export default function AxisOrganizer({
 
         {sortingMachineUnlocked ? (
           <div className="mt-2 rounded-lg bg-teal-50/80 px-2 py-1.5 text-center text-[0.65rem] text-teal-900">
-            Map: City Sorting Machine ready
+            Map: AI Career Classifier ready
           </div>
         ) : !revealActivated && uniqueVisited < 3 ? (
           <div className="mt-2 text-center text-[0.6rem] text-stone-500">

@@ -2,10 +2,11 @@ import { cityDistribution } from "@/data/cityDistribution";
 import type { ZooCityAnimalId } from "@/data/animalAssets";
 import type { DistrictId } from "@/types/city";
 
-/** Starter tokens for the axis organizer (animal identity only; district color is learner-assigned). */
+/** Starter tokens for the axis organizer; each carries its old district placement. */
 export type OrganizerTokenDef = {
   instanceId: string;
   animal: ZooCityAnimalId;
+  district: DistrictId;
 };
 
 const DISTRICTS: DistrictId[] = ["artist", "engineer", "manager", "community"];
@@ -20,6 +21,7 @@ export function buildStarterOrganizerTokens(): OrganizerTokenDef[] {
       out.push({
         instanceId: `starter-${d}-${row.animal}-${i}`,
         animal: row.animal,
+        district: d,
       });
     }
   }

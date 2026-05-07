@@ -1,13 +1,20 @@
 import type { JobId } from "@/types/game";
 import { animalAssets } from "@/data/animalAssets";
+import type { AnimalDiet, AnimalSize } from "@/types/game";
 
 export type Step5Animal = {
   id: string;
   name: string;
+  animalType?: string;
   avatar: string;
+  diet?: AnimalDiet;
+  size?: AnimalSize;
   traits: string[];
+  originalLabel?: JobId;
+  currentLabel?: JobId | "freelancer";
   dreamJob: JobId;
   aiRecommendation: Record<JobId, number>;
+  personalVoice?: string;
   voice: string;
 };
 

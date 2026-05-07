@@ -245,8 +245,8 @@ export function MachineRevealTransition({ onComplete }: MachineRevealTransitionP
             id="machine-reveal-title"
             className="mx-auto max-w-xl rounded-xl border border-white/10 bg-stone-950/35 px-4 py-3 font-serif text-lg leading-relaxed text-amber-50 shadow-sm backdrop-blur-md sm:px-5 sm:text-xl"
           >
-            The AI does not &apos;know&apos; you like a friend does. It breaks your words into
-            pieces, checks old city patterns, and predicts where you belong.
+            The AI classifier does not &apos;know&apos; you like a friend does. It uses
+            size and diet, compares labeled examples, and classifies a district.
           </p>
         </div>
       ) : null}

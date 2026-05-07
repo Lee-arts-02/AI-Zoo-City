@@ -87,7 +87,8 @@ export function inferVisitorWithSharedModel(
     LearnerProfile,
     | "presetAnimal"
     | "customAnimal"
-    | "traits"
+    | "diet"
+    | "size"
     | "dreamJob"
     | "dreamDistrict"
     | "customDreamJob"
@@ -100,7 +101,9 @@ export function inferVisitorWithSharedModel(
     name: "",
     presetAnimal: visitor.presetAnimal,
     customAnimal: visitor.customAnimal,
-    traits: visitor.traits,
+    traits: [],
+    diet: visitor.diet,
+    size: visitor.size,
     dreamJob: visitor.dreamJob,
     dreamDistrict: visitor.dreamDistrict,
     customDreamJob: visitor.customDreamJob,
@@ -112,7 +115,10 @@ export function inferVisitorWithSharedModel(
   const judgmentInput: JudgmentInput = {
     presetAnimal: visitor.presetAnimal,
     customAnimalTrimmed: visitor.customAnimal.trim(),
-    traits: visitor.traits,
+    diet: visitor.diet,
+    size: visitor.size,
+    traits: [],
+    trainingLabels: placements,
   };
   const cityInput: CityEvidenceInput = { ...judgmentInput, dreamJob };
 
@@ -146,9 +152,11 @@ export function inferVisitorWithSharedModel(
   }
 
   const framingLines = [
-    "This result follows the current Zoo City model probabilities.",
-    "The model compares your clues with what this city has learned.",
-    "These probabilities come from the city’s learned patterns.",
+    `Matched features: ${visitor.size ?? "Unknown size"} + ${visitor.diet ?? "Unknown diet"}.`,
+    "The classifier compares size and diet with this city's labeled examples.",
+    approved
+      ? `Similar past labels point to ${placeName}.`
+      : "Similar past labels did not point to one clear district.",
   ];
 
   return {

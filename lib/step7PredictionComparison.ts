@@ -44,17 +44,23 @@ export function buildPredictionComparisonPayload(state: GameState): PredictionCo
   const freelancerShare = computeFreelancerShare(placements);
   const dreamDistrictId = getEffectiveDreamJob(learner);
 
-  const judgmentInput: JudgmentInput = {
+  const originalInput: JudgmentInput = {
     presetAnimal: learner.presetAnimal,
     customAnimalTrimmed: learner.customAnimal.trim(),
-    traits: learner.traits,
+    diet: learner.diet,
+    size: learner.size,
+    traits: [],
+  };
+  const judgmentInput: JudgmentInput = {
+    ...originalInput,
+    trainingLabels: placements,
   };
   const cityInput: CityEvidenceInput = {
     ...judgmentInput,
     dreamJob: dreamDistrictId,
   };
   const cityEvidence = buildCombinedCityEvidence(placements, cityInput);
-  const beforeJ = computeJudgment(judgmentInput);
+  const beforeJ = computeJudgment(originalInput);
   const pack = computeRetrainedJudgment(
     cityInput,
     placements,

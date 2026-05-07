@@ -1,9 +1,9 @@
 import type { ZooCityAnimalId } from "@/data/animalAssets";
 
-/** Diet axis: left = herbivore, right = carnivore */
+/** Diet axis in the Step 3 organizer: top = herbivore, bottom = carnivore. */
 export type DietAxis = "herbivore" | "carnivore";
 
-/** Size axis: top = large, bottom = small (medium maps to “large” half for organizer simplicity). */
+/** Size axis in the Step 3 organizer: left = small, right = large (medium maps to the large half). */
 export type SizeAxis = "small" | "medium" | "large";
 
 export type AnimalTraitRow = {

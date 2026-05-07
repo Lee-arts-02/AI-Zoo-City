@@ -301,27 +301,16 @@ export function buildLearnerDescription(learner: LearnerProfile): string {
     : learner.dreamJob
       ? dreamJobPhrase(learner.dreamJob)
       : "…";
-  const t = learner.traits;
-
-  if (t.length === 0) {
-    return `You are a ${animal} who dreams of becoming ${jobPhrase}.`;
-  }
-  if (t.length === 1) {
-    return `You are a ${t[0]} ${animal} who dreams of becoming ${jobPhrase}.`;
-  }
-  if (t.length === 2) {
-    return `You are a ${t[0]}, ${t[1]} ${animal} who dreams of becoming ${jobPhrase}.`;
-  }
-  return `You are a ${t[0]}, ${t[1]}, and ${t[2]} ${animal} who dreams of becoming ${jobPhrase}.`;
+  return `You are a ${animal} with a dream of becoming ${jobPhrase}.`;
 }
 
 export function isLearnerProfileComplete(learner: LearnerProfile): boolean {
   const hasAnimal = getResolvedAnimalKey(learner) !== null;
+  const hasProfileFeatures = learner.diet !== null && learner.size !== null;
   const hasDream =
     (learner.dreamJob !== null && learner.dreamDistrict !== null) ||
     learner.customDreamJob.trim().length > 0;
-  const hasTrait = learner.traits.length >= 1;
-  return hasAnimal && hasDream && hasTrait;
+  return hasAnimal && hasProfileFeatures && hasDream;
 }
 
 /** Word-boundary match for known trait keys inside free text. */
@@ -359,7 +348,7 @@ const TRAIT_STOPWORDS = new Set([
 ]);
 
 /**
- * Tokens from free-typed trait text for display (and state), lowercased.
+ * Feature words from free-typed trait text for display (and state), lowercased.
  * Unknown words are kept for the card; the model maps known ones through the trait lexicon.
  */
 export function parseFreeTraitTokens(text: string): string[] {
@@ -370,7 +359,7 @@ export function parseFreeTraitTokens(text: string): string[] {
   return [...new Set(raw)];
 }
 
-/** Canonical trait keys for the AI model (animal + traits only). */
+/** Canonical trait keys for the AI classifier. */
 export function traitsNormalizedForModel(learner: LearnerProfile): string[] {
   return traitsForModel(learner.traits);
 }

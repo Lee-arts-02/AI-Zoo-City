@@ -8,7 +8,7 @@ export function shortPlacementFeedback(
   aiRecommendation: Record<JobId, number>,
 ): string {
   if (assigned === "freelancer") {
-    return "You created a new possibility.";
+    return "You created a new path.";
   }
   const aiTop = topAiJob(aiRecommendation);
   if (assigned === aiTop) {

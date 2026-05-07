@@ -49,7 +49,7 @@ export function PredictionComparison({
         </div>
         <div className="rounded-2xl border border-stone-200/90 bg-stone-50/95 px-4 py-4 shadow-sm ring-1 ring-stone-900/5">
           <p className="font-serif text-[11px] font-semibold uppercase tracking-wide text-stone-500">
-            Original prediction
+            Original Classification
           </p>
           <p className="mt-2 font-serif text-xl font-bold text-stone-900">
             {JOB_DISPLAY[originalTop].title}
@@ -66,7 +66,7 @@ export function PredictionComparison({
           }`}
         >
           <p className="font-serif text-[11px] font-semibold uppercase tracking-wide text-amber-900/80">
-            Current prediction
+            Current Classification
           </p>
           <p className="mt-2 font-serif text-xl font-bold text-amber-950">
             {titleForRetrainedPrediction(currentTop)}

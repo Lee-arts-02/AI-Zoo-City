@@ -13,10 +13,10 @@ export function Step7PredictionReveal({ onContinue }: { onContinue: () => void }
     <div className="w-full max-w-4xl space-y-8">
       <header className="space-y-2 text-center">
         <h2 className="font-serif text-3xl font-bold tracking-tight text-amber-950 sm:text-4xl">
-          Your Character, Predicted Again
+          Your Profile, Classified Again
         </h2>
         <p className="mx-auto max-w-2xl font-serif text-base text-amber-900/85 sm:text-lg">
-          After the city changed, the model changed too.
+          The classifier changed because the training examples and labels changed.
         </p>
       </header>
 
@@ -31,8 +31,8 @@ export function Step7PredictionReveal({ onContinue }: { onContinue: () => void }
       ) : (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-5 py-5 font-serif text-amber-950 shadow-sm">
           <p className="text-sm leading-relaxed">
-            Finish your character in Step 1 to see dream job and predictions side by side. Your new
-            city still changed what the model might guess — you&apos;ll explore that more in the
+            Finish your profile in Step 1 to see dream job and classifications side by side. Your new
+            city still changed what the classifier might output — you&apos;ll explore that more in the
             next screens.
           </p>
         </div>

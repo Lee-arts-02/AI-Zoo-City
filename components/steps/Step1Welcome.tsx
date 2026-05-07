@@ -4,20 +4,20 @@ import { useGameState } from "@/lib/gameState";
 import { resolveZooAnimalInput } from "@/data/zooAnimalDataset";
 import {
   DREAM_PATH_LABELS,
-  extractKnownTraitsFromText,
   getDreamDistrictForJob,
-  getAnimalDisplayName,
-  getAnimalEmojiForLearner,
   getResolvedAnimalKey,
   isRepresentativeDreamJobLabel,
   isLearnerProfileComplete,
   matchDreamJobInput,
-  parseFreeTraitTokens,
   PRESET_ANIMALS,
   REPRESENTATIVE_DREAM_JOBS,
-  SUGGESTED_TRAITS,
 } from "@/lib/learnerUtils";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
+import { AnimalProfileCard } from "@/components/shared/AnimalProfileCard";
+import {
+  buildLearnerProfileCardData,
+  getDefaultProfileFeatures,
+} from "@/lib/profileFeatures";
 import type { DreamJob, JobId, PresetAnimal } from "@/types/game";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
@@ -39,13 +39,11 @@ export type Step1WelcomeProps = {
 export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
   const { state, dispatch } = useGameState();
   const { learner } = state;
-  const [traitInput, setTraitInput] = useState("");
   const [customDreamInput, setCustomDreamInput] = useState(() =>
     learner.dreamJob && !isRepresentativeDreamJobLabel(learner.dreamJob)
       ? learner.dreamJob
       : "",
   );
-  const traitFieldId = useId();
   const nameFieldId = useId();
 
   const selectedPreset = learner.presetAnimal;
@@ -53,9 +51,15 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
   const hasCustomFocus = custom.trim().length > 0 && selectedPreset === null;
 
   const selectPreset = (id: PresetAnimal) => {
+    const defaults = getDefaultProfileFeatures(id);
     dispatch({
       type: "SET_LEARNER",
-      learner: { presetAnimal: id, customAnimal: "" },
+      learner: {
+        presetAnimal: id,
+        customAnimal: "",
+        diet: defaults?.diet ?? learner.diet,
+        size: defaults?.size ?? learner.size,
+      },
     });
   };
 
@@ -75,32 +79,17 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
     if (!t || learner.presetAnimal !== null) return;
     const r = resolveZooAnimalInput(t);
     if (r) {
+      const defaults = getDefaultProfileFeatures(r.key);
       dispatch({
         type: "SET_LEARNER",
-        learner: { presetAnimal: r.key as PresetAnimal, customAnimal: "" },
+        learner: {
+          presetAnimal: r.key as PresetAnimal,
+          customAnimal: "",
+          diet: defaults?.diet ?? learner.diet,
+          size: defaults?.size ?? learner.size,
+        },
       });
     }
-  };
-
-  const toggleTrait = (t: string) => {
-    const set = new Set(learner.traits);
-    if (set.has(t)) set.delete(t);
-    else if (set.size < 3) set.add(t);
-    dispatch({
-      type: "SET_LEARNER",
-      learner: { traits: [...set].sort() },
-    });
-  };
-
-  const addTraitsFromText = () => {
-    const fromTyping = parseFreeTraitTokens(traitInput);
-    const fromModel = extractKnownTraitsFromText(traitInput);
-    const merged = [...new Set([...learner.traits, ...fromTyping, ...fromModel])].slice(
-      0,
-      3,
-    );
-    dispatch({ type: "SET_LEARNER", learner: { traits: merged } });
-    setTraitInput("");
   };
 
   const setDreamJob = (id: DreamJob) => {
@@ -155,7 +144,7 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
   };
 
   const complete = isLearnerProfileComplete(learner);
-  const displayName = getAnimalDisplayName(learner);
+  const profileCard = buildLearnerProfileCardData(learner);
 
   const hasAnimal =
     learner.presetAnimal !== null || learner.customAnimal.trim().length > 0;
@@ -286,7 +275,7 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
               id="step1-animal-heading"
               className="mb-6 text-center font-serif text-2xl font-bold text-amber-950 md:text-3xl"
             >
-              1. Choose your animal
+              1. Create your animal profile
             </h2>
             <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {PRESET_ANIMALS.map((a) => {
@@ -336,88 +325,31 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
 
           <section
             className="w-full"
-            aria-labelledby="step1-traits-heading"
+            aria-labelledby="step1-features-heading"
           >
             <h2
-              id="step1-traits-heading"
-              className="mb-2 text-center font-serif text-2xl font-bold text-amber-950 md:text-3xl"
+              id="step1-features-heading"
+              className="mb-3 text-center font-serif text-2xl font-bold text-amber-950 md:text-3xl"
             >
-              2. Describe yourself
+              2. Review default diet and size
             </h2>
-            <p className="mx-auto mb-6 max-w-2xl text-center font-serif text-sm text-amber-900/85 md:text-base">
-              Pick up to three traits from the suggestions, or add your own words
-              below.
+            <p className="mx-auto mb-5 max-w-2xl text-center font-serif text-sm text-amber-900/85 md:text-base">
+              These classifier features are fixed by Zoo City&apos;s animal card.
+              You can see them here, but you cannot change them.
             </p>
-            <h3 className="mb-3 text-center font-serif text-base font-semibold text-amber-950">
-              Suggested traits
-            </h3>
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-              {SUGGESTED_TRAITS.map((t) => {
-                const on = learner.traits.includes(t);
-                const disabled = !on && learner.traits.length >= 3;
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => toggleTrait(t)}
-                    className={[
-                      "rounded-full border-2 px-3 py-1.5 font-serif text-sm font-semibold transition",
-                      on
-                        ? "border-amber-700 bg-amber-300 text-amber-950 shadow-sm"
-                        : disabled
-                          ? "cursor-not-allowed border-amber-200/50 bg-amber-50/50 text-amber-800/40"
-                          : "border-amber-300 bg-white text-amber-950 hover:border-amber-500",
-                    ].join(" ")}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="mx-auto mt-8 max-w-2xl rounded-2xl border-2 border-amber-300/70 bg-amber-50/50 p-5 md:p-6">
-              <h3 className="mb-2 text-center font-serif text-base font-semibold text-amber-950">
-                Your own words
-              </h3>
-              <p className="mb-4 text-center font-serif text-sm text-amber-900/80">
-                Type trait words (e.g. <em>clever</em>, <em>brave</em>), then add
-                them to your card.
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div className="min-w-0 flex-1">
-                  <label
-                    htmlFor={traitFieldId}
-                    className="font-serif text-sm font-medium text-amber-900"
-                  >
-                    Your words
-                  </label>
-                  <input
-                    id={traitFieldId}
-                    type="text"
-                    value={traitInput}
-                    onChange={(e) => setTraitInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addTraitsFromText();
-                      }
-                    }}
-                    placeholder="Type trait words…"
-                    className="mt-1 w-full rounded-xl border-2 border-amber-300 bg-white px-3 py-2 font-serif text-amber-950 placeholder:text-amber-800/40 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={addTraitsFromText}
-                  className="shrink-0 rounded-xl border-2 border-amber-700 bg-amber-200 px-4 py-2 font-serif text-sm font-semibold text-amber-950 shadow-sm hover:bg-amber-300"
-                >
-                  Add words
-                </button>
+            <div className="mx-auto grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border-2 border-amber-300/70 bg-white/80 p-4">
+                <p className="mb-3 text-center font-serif text-sm font-bold uppercase tracking-wide text-amber-800">
+                  Diet
+                </p>
+                <ReadOnlyFeatureValue value={profileCard.diet} fallback="Choose an animal first" />
               </div>
-              <p className="mt-3 text-center font-serif text-xs text-amber-800/70">
-                Add words shows them on your card (max 3). Known words also
-                nudge the AI model.
-              </p>
+              <div className="rounded-2xl border-2 border-amber-300/70 bg-white/80 p-4">
+                <p className="mb-3 text-center font-serif text-sm font-bold uppercase tracking-wide text-amber-800">
+                  Size
+                </p>
+                <ReadOnlyFeatureValue value={profileCard.size} fallback="Choose an animal first" />
+              </div>
             </div>
           </section>
 
@@ -429,14 +361,14 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
               id="step1-dream-heading"
               className="mb-6 text-center font-serif text-2xl font-bold text-amber-950 md:text-3xl"
             >
-              3. Dream job
+              3. Human dream
             </h2>
             <p className="mx-auto mb-3 max-w-2xl text-center font-serif text-lg font-semibold text-amber-950">
               What kind of dream job do you want?
             </p>
             <p className="mx-auto mb-6 max-w-2xl text-center font-serif text-sm text-amber-900/85 md:text-base">
-              Pick a path, or type your own dream job. The AI&apos;s clue tokens
-              still come only from your animal and traits.
+              Pick a path, or type your own dream job. The AI classifier uses
+              size and diet, not your dream, to classify.
             </p>
             <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {REPRESENTATIVE_DREAM_JOBS.map((j) => {
@@ -551,8 +483,7 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
           <div className="flex flex-col items-center gap-4 pt-4">
             {!complete && (
               <p className="max-w-lg text-center font-serif text-sm text-orange-800">
-                Pick a Zoo City animal (grid or typed), at least one trait, and
-                a dream job path to continue.
+                Pick a Zoo City animal, review its default diet and size, and choose a dream job path to continue.
               </p>
             )}
             <button
@@ -561,43 +492,45 @@ export function Step1Welcome({ onEnterAISystem }: Step1WelcomeProps) {
               onClick={onEnterAISystem}
               className="min-h-[52px] w-full max-w-md rounded-2xl border-2 border-amber-900 bg-gradient-to-r from-amber-400 to-orange-400 px-6 font-serif text-lg font-bold text-amber-950 shadow-[4px_4px_0_0_rgba(120,53,15,0.3)] transition enabled:hover:translate-y-px enabled:hover:from-amber-300 enabled:hover:to-orange-300 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Enter the AI System →
+              Enter the AI Classifier →
             </button>
           </div>
 
-          <aside
-            className="mx-auto mt-4 w-full max-w-lg rounded-2xl border-4 border-amber-300 bg-gradient-to-br from-white to-amber-100/90 p-6 shadow-[6px_6px_0_0_rgba(217,119,6,0.25)]"
-            aria-live="polite"
-          >
-          <p className="mb-2 text-center font-serif text-xs font-bold uppercase tracking-widest text-amber-800/80">
-            Live character card
-          </p>
-          <div className="mb-3 flex items-center justify-center gap-2">
-            <span className="text-4xl" aria-hidden>
-              {getAnimalEmojiForLearner(learner)}
-            </span>
-            <span className="font-serif text-lg font-semibold capitalize text-amber-950">
-              {displayName}
-            </span>
-          </div>
-          <p className="text-center font-serif text-base leading-relaxed text-amber-950">
-            {learner.description}
-          </p>
-          {learner.traits.length > 0 && (
-            <ul className="mt-3 flex flex-wrap justify-center gap-1">
-              {learner.traits.map((t) => (
-                <li
-                  key={t}
-                  className="rounded-full bg-amber-200/80 px-2 py-0.5 font-serif text-xs font-medium text-amber-950"
-                >
-                  {t}
-                </li>
-              ))}
-            </ul>
-          )}
-          </aside>
+          <AnimalProfileCard
+            profile={profileCard}
+            title="Live Animal Profile"
+            className="mx-auto mt-4 w-full max-w-lg"
+          />
         </div>
       </div>
     </section>
+  );
+}
+
+function ReadOnlyFeatureValue({
+  value,
+  fallback,
+}: {
+  value: string | null | undefined;
+  fallback: string;
+}) {
+  const display = value ?? fallback;
+  const hasValue = Boolean(value);
+
+  return (
+    <div
+      className={[
+        "rounded-2xl border-2 px-4 py-3 text-center font-serif shadow-inner",
+        hasValue
+          ? "border-sky-300 bg-sky-50 text-sky-950"
+          : "border-amber-200 bg-amber-50/70 text-amber-800/70",
+      ].join(" ")}
+      aria-readonly="true"
+    >
+      <p className="text-lg font-black">{display}</p>
+      <p className="mt-1 text-xs font-semibold uppercase tracking-wide opacity-70">
+        Fixed default
+      </p>
+    </div>
   );
 }

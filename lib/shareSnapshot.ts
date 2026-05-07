@@ -22,6 +22,8 @@ export type ShareSnapshotV1 = {
   creatorSummary: {
     presetAnimal: string | null;
     customAnimal: string;
+    diet?: LearnerProfile["diet"];
+    size?: LearnerProfile["size"];
     traits: string[];
     dreamJob: DreamJob | null;
     dreamDistrict?: JobId | null;
@@ -100,6 +102,8 @@ export function buildShareSnapshotFromGameState(
     creatorSummary: {
       presetAnimal: learner.presetAnimal,
       customAnimal: learner.customAnimal,
+      diet: learner.diet,
+      size: learner.size,
       traits: [...learner.traits],
       dreamJob: learner.dreamJob,
       dreamDistrict: learner.dreamDistrict,
@@ -159,6 +163,24 @@ export function decodeSharePayload(encoded: string): ShareSnapshotV1 | null {
       if (!isZooCityAnimalKey(summary.presetAnimal)) return null;
     }
     if (typeof summary.customAnimal !== "string") return null;
+    if (
+      Object.prototype.hasOwnProperty.call(summary, "diet") &&
+      summary.diet !== null &&
+      summary.diet !== "Carnivore" &&
+      summary.diet !== "Herbivore" &&
+      summary.diet !== "Omnivore"
+    ) {
+      return null;
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(summary, "size") &&
+      summary.size !== null &&
+      summary.size !== "Small" &&
+      summary.size !== "Medium" &&
+      summary.size !== "Large"
+    ) {
+      return null;
+    }
     if (!Array.isArray(summary.traits)) return null;
     if (!summary.traits.every((t) => typeof t === "string")) return null;
     if (summary.dreamJob !== null) {

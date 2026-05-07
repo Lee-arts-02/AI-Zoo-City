@@ -49,21 +49,21 @@ export function Step6Comparison() {
           Your New Zoo City
         </h2>
         <p className="mx-auto max-w-2xl font-serif text-base text-amber-900/85 sm:text-lg">
-          The city has changed.
+          The city has changed. This snapshot shows feature patterns and district labels.
         </p>
       </header>
 
       <div className="mx-auto w-full max-w-3xl space-y-4 rounded-3xl border border-amber-200/50 bg-gradient-to-b from-amber-50/40 via-white/80 to-amber-50/30 p-4 ring-1 ring-amber-100/60 sm:p-5">
         <p className="text-center font-serif text-xs font-semibold uppercase tracking-wide text-amber-800/70">
-          Your city snapshot
+          Your City Snapshot + Feature Pattern Map
         </p>
         <DistrictCityBoard placements={placements} compact />
         <Step6QuadrantOrganizer placements={placements} />
       </div>
 
       <p className="mx-auto max-w-xl text-center font-serif text-sm leading-relaxed text-amber-900/80">
-        This is the city you shaped — where animals live and how the story adds up. Next,
-        we&apos;ll look at what the updated model might guess for <em>you</em>.
+        This is the city you shaped. Notice how size, diet, and district labels
+        create a new pattern map.
       </p>
 
       <div className="flex justify-center">
@@ -72,7 +72,7 @@ export function Step6Comparison() {
           onClick={continueToStep7}
           className="min-h-[52px] rounded-2xl border-2 border-amber-800 bg-amber-400 px-10 font-serif text-lg font-semibold text-amber-950 shadow-[4px_4px_0_0_rgba(120,53,15,0.2)] transition hover:translate-y-px hover:bg-amber-300"
         >
-          See what this means for me
+          Continue to my profile
         </button>
       </div>
     </section>

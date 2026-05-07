@@ -29,14 +29,14 @@ export function Step5IntroTransition() {
     };
 
     t(() => setMachineOp(0), 40);
-    t(() => setCaption("Now you can change the dataset — who belongs in which district?"), MACHINE_MS);
+    t(() => setCaption("Now you can change the training labels — which district should each profile teach?"), MACHINE_MS);
     t(() => setMapOnB(true), MACHINE_MS + LINE1_MS);
     t(
-      () => setCaption("Zoo City has added a new Freelancer Hub."),
+      () => setCaption("Before, the classifier only had four labels. Freelancer Hub gives it a new label."),
       MACHINE_MS + LINE1_MS + MAP_CROSS_MS + 400,
     );
     t(
-      () => setCaption("The city now supports more possibilities."),
+      () => setCaption("The city now supports a new path for future classifications."),
       MACHINE_MS + LINE1_MS + MAP_CROSS_MS + HUB_MS,
     );
 
@@ -81,7 +81,7 @@ export function Step5IntroTransition() {
           Chapter 5
         </p>
         <h2 className="mb-4 text-center font-serif text-2xl font-bold text-rose-950 sm:text-3xl">
-          Zoo City Hiring / Assignment
+          Redesign Training Labels
         </h2>
 
         <div
@@ -135,7 +135,7 @@ export function Step5IntroTransition() {
         </div>
 
         <p className="mt-3 text-center font-serif text-sm text-rose-900/70">
-          The city updates — then your hiring workspace opens.
+          The city updates — then your label-redesign workspace opens.
         </p>
       </div>
     </section>

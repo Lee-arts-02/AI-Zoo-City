@@ -25,8 +25,8 @@ export type RetrainedJudgmentPack = {
 };
 
 /**
- * Retrained prediction: blends Step-4-style profile judgment with **combined city evidence**
- * (traits + identity + dream resonance + soft district stories + pattern shift), not raw
+ * Updated classification: blends profile-feature judgment with **combined city evidence**
+ * (features + label changes + soft district stories + pattern shift), not raw
  * district headcounts. See `buildCombinedCityEvidence`.
  */
 export function computeRetrainedJudgment(

@@ -1,6 +1,7 @@
 "use client";
 
 import { DrawingCanvas } from "@/components/DrawingCanvas";
+import { AnimalProfileCard } from "@/components/shared/AnimalProfileCard";
 import {
   CERTIFICATE_CLOSING,
   CERTIFICATE_PERSONALIZED,
@@ -17,19 +18,20 @@ import { getAiSuggestedJob } from "@/lib/step7AiSuggest";
 import { useGameState } from "@/lib/gameState";
 import {
   DREAM_DISTRICT_LABELS,
-  extractKnownTraitsFromText,
   formatLearnerNameForDisplay,
   getAnimalDisplayName,
   getDreamDistrictForJob,
   getDreamDisplayLabel,
   isRepresentativeDreamJobLabel,
   matchDreamJobInput,
-  parseFreeTraitTokens,
   PRESET_ANIMALS,
   REPRESENTATIVE_DREAM_JOBS,
-  SUGGESTED_TRAITS,
 } from "@/lib/learnerUtils";
 import { JOB_DISPLAY } from "@/lib/aiModel";
+import {
+  buildLearnerProfileCardData,
+  getDefaultProfileFeatures,
+} from "@/lib/profileFeatures";
 import type { DreamJob, JobId, PresetAnimal, Step7CareerChoice } from "@/types/game";
 import { Step7DrawRobotPrompt } from "@/components/step7/Step7DrawRobotPrompt";
 import { Step7PredictionReveal } from "@/components/step7/Step7PredictionReveal";
@@ -37,29 +39,21 @@ import { Step7SharePanel } from "@/components/step7/Step7SharePanel";
 import {
   useCallback,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
 } from "react";
 import QRCode from "react-qr-code";
 
-function formatTraits(traits: string[]): string {
-  if (traits.length === 0) return "—";
-  return traits
-    .map((t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase())
-    .join(", ");
-}
-
 function jobLabel(id: JobId): string {
   return JOB_DISPLAY[id].title;
 }
 
-/** Intro — bold “predictions”; shared by on-screen certificate and PNG export. */
+/** Intro — shared by on-screen certificate and PNG export. */
 function CertificateIntroParagraph({ className }: { className?: string }) {
   return (
     <p className={className}>
-      You audited our AI system, learned how it makes <strong>predictions</strong>, and
+      You audited our AI classifier, learned how it makes <strong>classifications</strong>, and
       constructed your own way to make it better.
     </p>
   );
@@ -70,13 +64,15 @@ function CertificateWhatYouDiscoveredList({ ulClassName }: { ulClassName: string
   return (
     <ul className={ulClassName}>
       <li>
-        The system works with small pieces called <strong>tokens</strong>
+        The system uses profile <strong>features</strong> such as size and diet
       </li>
       <li>
-        It makes <strong>predictions</strong> based on past patterns
+        It learns from <strong>labeled examples</strong>
       </li>
       <li>
-        Predictions are not final decisions, but{" "}
+        A <strong>classification</strong> is not a final decision
+      </li>
+      <li>
         <strong>people still belong in the loop</strong>
       </li>
     </ul>
@@ -104,7 +100,7 @@ export function Step7Reflection() {
     () => buildPredictionComparisonPayload(state),
     [state],
   );
-  /** “AI Suggests” uses the same retrained top role as Step 6 / prediction reveal (city + hub evidence), not the raw Step-4 token fusion. */
+  /** “AI Classifies” uses the same updated top label as the classification reveal. */
   const aiSuggestLabel = useMemo(() => {
     if (predictionPayload.predictionReady) {
       return titleForRetrainedPrediction(predictionPayload.currentTop);
@@ -228,7 +224,7 @@ export function Step7Reflection() {
       case 1:
         return "";
       case 2:
-        return "Every path here is a mix of pattern and choice.";
+        return "Every path here is a mix of classification and choice.";
       case 3:
         return "Show us how you see yourself in this place.";
       case 4:
@@ -246,20 +242,16 @@ export function Step7Reflection() {
     return "";
   };
 
-  const toggleTrait = (t: string) => {
-    const set = new Set(learner.traits);
-    if (set.has(t)) set.delete(t);
-    else if (set.size < 3) set.add(t);
-    dispatch({
-      type: "SET_LEARNER",
-      learner: { traits: [...set].sort() },
-    });
-  };
-
   const selectPreset = (id: PresetAnimal) => {
+    const defaults = getDefaultProfileFeatures(id);
     dispatch({
       type: "SET_LEARNER",
-      learner: { presetAnimal: id, customAnimal: "" },
+      learner: {
+        presetAnimal: id,
+        customAnimal: "",
+        diet: defaults?.diet ?? learner.diet,
+        size: defaults?.size ?? learner.size,
+      },
     });
   };
 
@@ -317,17 +309,16 @@ export function Step7Reflection() {
   const hasCustom =
     learner.customAnimal.trim().length > 0 && learner.presetAnimal === null;
 
-  const [traitInput, setTraitInput] = useState("");
   const [customDreamInput, setCustomDreamInput] = useState(() =>
     learner.dreamJob && !isRepresentativeDreamJobLabel(learner.dreamJob)
       ? learner.dreamJob
       : "",
   );
-  const traitFieldId = useId();
   const [nameEditing, setNameEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
 
   const formattedLearnerName = formatLearnerNameForDisplay(learner.name);
+  const profileCard = useMemo(() => buildLearnerProfileCardData(learner), [learner]);
 
   const step7Phase1Sentences = useMemo(() => {
     const n = formattedLearnerName.trim().length > 0 ? formattedLearnerName : "friend";
@@ -382,26 +373,6 @@ export function Step7Reflection() {
       step7IntroPauseRef.current = null;
     };
   }, [phase, step7IntroIx, step7Phase1Sentences]);
-
-  const addTraitsFromText = useCallback(() => {
-    const fromTyping = parseFreeTraitTokens(traitInput);
-    const fromModel = extractKnownTraitsFromText(traitInput);
-    const merged = [
-      ...new Set([...learner.traits, ...fromTyping, ...fromModel]),
-    ].slice(0, 3);
-    dispatch({ type: "SET_LEARNER", learner: { traits: merged } });
-    setTraitInput("");
-  }, [dispatch, learner.traits, traitInput]);
-
-  const removeTrait = useCallback(
-    (t: string) => {
-      dispatch({
-        type: "SET_LEARNER",
-        learner: { traits: learner.traits.filter((x) => x !== t) },
-      });
-    },
-    [dispatch, learner.traits],
-  );
 
   return (
     <section
@@ -462,33 +433,9 @@ export function Step7Reflection() {
 
             <div className="rounded-2xl border border-amber-900/10 bg-white/80 p-6 shadow-inner">
               <p className="mb-4 font-serif text-sm font-medium uppercase tracking-wider text-amber-900/60">
-                Identity card
+                Animal profile card
               </p>
-              <dl className="space-y-2 font-serif text-amber-950">
-                <div className="flex justify-between gap-4">
-                  <dt className="text-amber-800/80">Animal</dt>
-                  <dd className="font-semibold">
-                    {getAnimalDisplayName(learner)
-                      .split(/\s+/)
-                      .map(
-                        (w) =>
-                          w.charAt(0).toUpperCase() +
-                          w.slice(1).toLowerCase(),
-                      )
-                      .join(" ")}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-amber-800/80">Traits</dt>
-                  <dd className="text-right font-semibold">
-                    {formatTraits(learner.traits)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-amber-800/80">Dream</dt>
-                  <dd className="font-semibold">{dreamLabel}</dd>
-                </div>
-              </dl>
+              <AnimalProfileCard profile={profileCard} title="Your Animal Profile" compact />
 
               {learner.drawingDataUrl ? (
                 <div className="mt-5 border-t border-amber-900/10 pt-4">
@@ -544,94 +491,11 @@ export function Step7Reflection() {
                       placeholder="e.g. Red panda"
                     />
                   </label>
-                  <div>
-                    <p className="font-serif text-xs font-medium text-amber-900/80">
-                      Traits (up to 3)
+                  <div className="rounded-xl border border-sky-200 bg-sky-50/80 p-3 font-serif text-xs text-sky-950">
+                    <p className="font-bold">Classifier features</p>
+                    <p className="mt-1">
+                      This simplified classifier uses only size and diet. Animal identity and dream stay part of your story.
                     </p>
-                    {learner.traits.length > 0 && (
-                      <div className="mt-2">
-                        <p className="font-serif text-xs text-amber-900/65">
-                          Your traits (tap to remove)
-                        </p>
-                        <div className="mt-1 flex flex-wrap gap-2">
-                        {learner.traits.map((t) => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => removeTrait(t)}
-                            title={`Remove ${t}`}
-                            className="inline-flex items-center gap-1 rounded-full border border-amber-700/40 bg-amber-100/90 px-2.5 py-1 font-serif text-sm capitalize text-amber-950 hover:bg-amber-200"
-                          >
-                            <span aria-hidden>×</span>
-                            {t}
-                          </button>
-                        ))}
-                        </div>
-                      </div>
-                    )}
-                    <p className="mt-3 font-serif text-xs text-amber-900/70">
-                      Suggested
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {SUGGESTED_TRAITS.map((t) => {
-                        const on = learner.traits.includes(t);
-                        return (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => toggleTrait(t)}
-                            className={[
-                              "rounded-full border px-3 py-1 font-serif text-sm capitalize",
-                              on
-                                ? "border-amber-700 bg-amber-200 text-amber-950"
-                                : "border-amber-900/15 bg-white text-amber-900/80",
-                            ].join(" ")}
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div className="mt-4 rounded-xl border border-amber-900/15 bg-amber-50/50 p-3">
-                      <p className="font-serif text-xs font-medium text-amber-900/80">
-                        Custom traits
-                      </p>
-                      <p className="mt-1 font-serif text-xs text-amber-900/65">
-                        Type your own words (same as step 1), then add them to
-                        your card.
-                      </p>
-                      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
-                        <div className="min-w-0 flex-1">
-                          <label
-                            htmlFor={traitFieldId}
-                            className="sr-only"
-                          >
-                            Custom trait words
-                          </label>
-                          <input
-                            id={traitFieldId}
-                            type="text"
-                            value={traitInput}
-                            onChange={(e) => setTraitInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                addTraitsFromText();
-                              }
-                            }}
-                            placeholder="e.g. silly, determined…"
-                            className="w-full rounded-lg border border-amber-900/20 bg-white px-3 py-2 font-serif text-sm text-amber-950 placeholder:text-amber-800/40"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={addTraitsFromText}
-                          className="shrink-0 rounded-lg border border-amber-800 bg-amber-200 px-3 py-2 font-serif text-sm font-semibold text-amber-950 hover:bg-amber-300"
-                        >
-                          Add words
-                        </button>
-                      </div>
-                    </div>
                   </div>
                   <label className="block font-serif text-xs text-amber-900/70">
                     Dream job
@@ -714,7 +578,7 @@ export function Step7Reflection() {
                 {dreamLabel}
               </p>
               <p className="mt-6 font-serif text-sm text-amber-800/80">
-                AI Suggests
+                Current Classification
               </p>
               <p className="mt-1 font-serif text-2xl font-semibold text-amber-950">
                 {aiSuggestLabel}
@@ -729,7 +593,7 @@ export function Step7Reflection() {
                 onClick={() => pickChoice("follow_ai")}
                 className="rounded-2xl border border-amber-900/20 bg-white px-4 py-4 font-serif text-lg font-medium text-amber-950 shadow-sm transition hover:bg-amber-50"
               >
-                Follow the AI suggestion
+                Follow the AI classification
               </button>
               <button
                 type="button"
@@ -931,7 +795,7 @@ export function Step7Reflection() {
                   </dl>
                   <div className="mt-3 rounded-xl bg-amber-50/90 px-3 py-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-amber-800/85">
-                      Words you kept
+                    Reflection you kept
                     </p>
                     <p className="mt-1 font-serif text-base font-medium leading-relaxed text-amber-950 sm:text-lg">
                       {reflectionKept}
@@ -1040,8 +904,8 @@ export function Step7Reflection() {
                       )}
                     </div>
                     <p className="mt-3 text-center text-sm text-amber-800/80">
-                    Share your Zoo City AI model with your friends.
-                    See if they can land their dream jobs in your city!
+                    Share your Zoo City classifier with your friends.
+                    See how their profile features are classified in your city!
                     </p>
                   </div>
                 </div>

@@ -1,10 +1,11 @@
 "use client";
 
-import { JOB_DISPLAY, JOB_IDS } from "@/lib/aiModel";
+import { JOB_DISPLAY } from "@/lib/aiModel";
+import { AnimalProfileCard } from "@/components/shared/AnimalProfileCard";
+import { buildStep5ProfileCardData } from "@/lib/profileFeatures";
 import { topAiJob } from "@/lib/step5Layout";
 import type { Step5Animal } from "@/data/step5Animals";
 import type { RedesignRegionId } from "@/types/city";
-import type { JobId } from "@/types/game";
 import { useEffect, useState } from "react";
 
 const DECISIONS: { id: RedesignRegionId; label: string }[] = [
@@ -59,11 +60,9 @@ export function ActiveDecisionCard({
   useEffect(() => {
     setOpen(false);
   }, [animal.id]);
-  const aiSorted = [...JOB_IDS].sort(
-    (a, b) => animal.aiRecommendation[b] - animal.aiRecommendation[a],
-  );
   const aiTop = topAiJob(animal.aiRecommendation);
   const { firstName, species } = splitAnimalTitle(animal.name);
+  const profile = buildStep5ProfileCardData(animal);
 
   return (
     <div
@@ -86,13 +85,26 @@ export function ActiveDecisionCard({
         {species ? (
           <p className="mt-1 font-serif text-xs font-medium text-stone-600">{species}</p>
         ) : null}
-        <p className="mt-2 w-full max-w-[280px] text-center font-serif text-sm leading-snug text-stone-800">
-          <span className="font-semibold text-stone-800">Traits: </span>
-          <span className="text-stone-700">{animal.traits.join(" · ")}</span>
-        </p>
+        <AnimalProfileCard
+          profile={profile}
+          title="Training Profile"
+          compact
+          hideDream
+          className="mt-3 w-full max-w-[280px] border-2 shadow-none"
+        />
         <p className="mt-2 w-full max-w-[280px] text-center font-serif text-sm leading-snug text-stone-800">
           <span className="font-bold text-stone-900">Personal voice</span>
-          <span className="text-stone-700">: “{animal.voice}”</span>
+          <span className="text-stone-700">: “{animal.personalVoice ?? animal.voice}”</span>
+        </p>
+      </div>
+
+      <div className="mt-3 rounded-2xl border border-stone-200 bg-stone-50/90 p-3 text-center font-serif shadow-sm">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">
+          Decision area
+        </p>
+        <p className="mt-1 text-xs leading-snug text-stone-700">
+          <span className="font-semibold text-stone-800">Current label: </span>
+          {DECISIONS.find((d) => d.id === currentDistrict)?.label ?? currentDistrict}
         </p>
       </div>
 
@@ -100,34 +112,31 @@ export function ActiveDecisionCard({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="mt-3 rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 font-serif text-sm font-semibold text-stone-800 shadow-sm hover:bg-stone-100"
+        aria-expanded={open}
       >
-        {open ? "Hide" : "AI Recommendation"}
+        {open ? "Hide classifier recommendation" : "Show classifier recommendation"}
       </button>
 
       {open ? (
-        <div className="mt-3 space-y-3 rounded-2xl border border-stone-200/80 bg-stone-50/80 p-3 text-left font-serif text-sm text-stone-800">
+        <div className="mt-3 space-y-3 rounded-2xl border border-indigo-200/80 bg-indigo-50/80 p-3 text-left font-serif text-sm text-stone-800">
           <div>
-            <p className="font-semibold">AI recommendation</p>
-            <ul className="mt-1 list-inside list-disc space-y-0.5 text-stone-700">
-              {aiSorted.map((j: JobId) => (
-                <li key={j}>
-                  {JOB_DISPLAY[j].title} {animal.aiRecommendation[j]}%
-                </li>
-              ))}
-            </ul>
+            <p className="font-semibold">AI classification</p>
+            <p className="mt-1 rounded-xl bg-white px-3 py-2 font-bold text-stone-800">
+              Classified as: {JOB_DISPLAY[aiTop].title}
+            </p>
           </div>
           <p className="font-medium text-stone-800">
-            Where do YOU think {firstName} should go?
+            Which district label should {firstName} have?
           </p>
           <p className="text-xs text-stone-500">
-            One possible highlight: {JOB_DISPLAY[aiTop].title} ({animal.aiRecommendation[aiTop]}%).
+            The classifier compares size and diet with past labels.
           </p>
         </div>
       ) : null}
 
       <div className="mt-3 space-y-1.5">
         <p className="text-center font-serif text-[10px] font-semibold uppercase tracking-wide text-stone-600 sm:text-[11px]">
-          Place or move to…
+          Change label to…
         </p>
         <div className="grid grid-cols-2 gap-1.5">
           {DECISIONS.slice(0, 4).map((d) => {

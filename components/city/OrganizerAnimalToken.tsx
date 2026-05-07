@@ -132,7 +132,7 @@ export default function OrganizerAnimalToken({
       onPointerDown={(e) => e.stopPropagation()}
     >
       <p className="text-[0.6rem] font-semibold uppercase tracking-wide text-stone-500">
-        District (your guess)
+        District label
       </p>
       <div className="flex flex-wrap gap-1">
         {DISTRICT_SWATCHES.map((d) => (

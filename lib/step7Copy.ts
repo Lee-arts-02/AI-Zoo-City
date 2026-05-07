@@ -15,25 +15,25 @@ export const REFLECTION_VARIANTS: Record<Step7CareerChoice, string[]> = {
     "I would trust the patterns the system has learned from the past.",
     "I would stay with the system’s suggestion, grounded in what came before.",
     "I listened to the system, but I still made my own choice.",
-    "I can use AI as a guide, but not as the final answer.",
+    "I can use a classifier as a guide, but not as the final answer.",
     "I followed the suggestion with care, because I heard the animals too.",
-    "I balanced the model's advice with what felt right in this city.",
+    "I balanced the classifier's output with what felt right in this city.",
   ],
   own_path: [
     REFLECTION_BASE.own_path,
     "I would pick my own direction, even if the system points elsewhere.",
     "I would follow my own compass, not only the system’s map.",
     "I chose a path that felt true to who I am.",
-    "My future is not only a prediction.",
-    "I questioned the guess and redesigned the path.",
+    "My future is not only a classification.",
+    "I questioned the classification and redesigned the path.",
     "I noticed the pattern, then changed where it could lead.",
   ],
   new_path: [
     REFLECTION_BASE.new_path,
     "I would invent a route the system never pictured.",
-    "I would open a path outside what the model expected.",
+    "I would open a path outside what the classifier expected.",
     "I created a path the system did not imagine.",
-    "I helped Zoo City make room for more possibilities.",
+    "I helped Zoo City make room for more stories.",
     "I chose to build a city where more stories can belong.",
     "I imagined a different future and started drawing it here.",
     "I heard the voices inside the city and chose with care.",
@@ -44,21 +44,21 @@ export const REFLECTION_VARIANTS: Record<Step7CareerChoice, string[]> = {
 export const CERTIFICATE_SHORT: Record<Step7CareerChoice, string> = {
   follow_ai: "You moved with the patterns the system knows.",
   own_path: "You chose your own direction over the default.",
-  new_path: "You created possibilities beyond the system.",
+  new_path: "You created a path beyond the system.",
 };
 
 export const CHOICE_LABEL: Record<Step7CareerChoice, string> = {
-  follow_ai: "Followed the AI suggestion",
+  follow_ai: "Followed the AI classification",
   own_path: "Chose my own path",
   new_path: "Created a new path",
 };
 
 /**
  * Certificate — intro paragraph (plain text). On-screen / PNG use
- * `CertificateIntroParagraph` in Step7Reflection with **predictions** bolded.
+ * `CertificateIntroParagraph` in Step7Reflection with **classifications** bolded.
  */
 export const CERTIFICATE_INTRO =
-  "You audited our AI system, learned how it makes predictions, and constructed your own way to make it better.";
+  "You audited our AI classifier, learned how it makes classifications, and constructed your own way to make it better.";
 
 /** Certificate — personalized line after identity fields (by Step 7 choice). */
 export const CERTIFICATE_PERSONALIZED: Record<Step7CareerChoice, string> = {
@@ -73,6 +73,6 @@ export const CERTIFICATE_PERSONALIZED: Record<Step7CareerChoice, string> = {
 export const CERTIFICATE_CLOSING: Record<Step7CareerChoice, string> = {
   follow_ai:
     "You created continuity with what came before — and you still made it yours.",
-  own_path: "You created possibilities beyond what the system expected.",
-  new_path: "You created possibilities beyond what the system expected.",
+  own_path: "You created a path beyond what the system expected.",
+  new_path: "You created a path beyond what the system expected.",
 };

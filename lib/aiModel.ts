@@ -1,12 +1,13 @@
 /**
- * Deterministic job prediction: same inputs always yield the same probabilities.
- * Raw score = WEIGHT_PRIOR * animalPrior + WEIGHT_TRAIT * traitSignal, then softmax.
+ * Deterministic supervised classifier: the machine sees size and diet, then
+ * matches those features against old animal cards with district labels.
  * Dream job is not part of the machine signal (learner aspiration only).
  */
 
 import { animalPriorFromDataset, resolveZooAnimalInput } from "@/data/zooAnimalDataset";
-import { traitWeights, traitsForModel } from "@/data/modelTraits";
-import type { JobId } from "@/types/game";
+import { STEP5_ANIMALS } from "@/data/step5Animals";
+import { getDefaultProfileFeatures } from "@/lib/profileFeatures";
+import type { AnimalDiet, AnimalSize, JobId } from "@/types/game";
 
 export const JOB_IDS: readonly JobId[] = [
   "artist",
@@ -14,8 +15,6 @@ export const JOB_IDS: readonly JobId[] = [
   "manager",
   "community",
 ] as const;
-
-export { traitWeights };
 
 /** Sharper priors per species — imported from the zoo dataset. */
 export const animalPrior: Record<string, Record<JobId, number>> =
@@ -29,8 +28,25 @@ export const customAnimalPrior: Record<JobId, number> = {
   community: 0.25,
 };
 
-const WEIGHT_PRIOR = 0.58;
-const WEIGHT_TRAIT = 0.42;
+const PAST_LABEL_BY_ANIMAL: Record<string, JobId> = {
+  rabbit: "artist",
+  hedgehog: "artist",
+  capybara: "artist",
+  squirrel: "artist",
+  fox: "engineer",
+  chameleon: "engineer",
+  cat: "engineer",
+  dog: "community",
+  otter: "engineer",
+  bear: "manager",
+  lion: "manager",
+  wolf: "manager",
+  tiger: "manager",
+  deer: "community",
+  sheep: "community",
+  elephant: "community",
+  zebra: "community",
+};
 
 /** Human-readable labels for UI and explanations */
 export const JOB_DISPLAY: Record<
@@ -79,21 +95,30 @@ function getPriorForAnimalKey(animalKey: string | null): Record<JobId, number> {
   return customAnimalPrior;
 }
 
-function traitSignalForJobs(traitKeys: string[]): Record<JobId, number> {
-  const out: Record<JobId, number> = {
-    artist: 0,
-    engineer: 0,
-    manager: 0,
-    community: 0,
+const DIET_SIGNAL: Record<AnimalDiet, Record<JobId, number>> = {
+  Carnivore: { artist: 0.1, engineer: 0.2, manager: 0.45, community: 0.25 },
+  Herbivore: { artist: 0.28, engineer: 0.12, manager: 0.14, community: 0.46 },
+  Omnivore: { artist: 0.22, engineer: 0.28, manager: 0.26, community: 0.24 },
+};
+
+const SIZE_SIGNAL: Record<AnimalSize, Record<JobId, number>> = {
+  Small: { artist: 0.38, engineer: 0.22, manager: 0.18, community: 0.22 },
+  Medium: { artist: 0.22, engineer: 0.28, manager: 0.26, community: 0.24 },
+  Large: { artist: 0.12, engineer: 0.22, manager: 0.28, community: 0.38 },
+};
+
+function featureValueForInput(input: JudgmentInput): {
+  animalKey: string | null;
+  diet: AnimalDiet | null;
+  size: AnimalSize | null;
+} {
+  const animalKey = effectiveAnimalKey(input);
+  const defaults = getDefaultProfileFeatures(animalKey);
+  return {
+    animalKey,
+    diet: input.diet ?? defaults?.diet ?? null,
+    size: input.size ?? defaults?.size ?? null,
   };
-  for (const t of traitKeys) {
-    const w = traitWeights[t];
-    if (!w) continue;
-    for (const j of JOB_IDS) {
-      out[j] += w[j];
-    }
-  }
-  return out;
 }
 
 function softmax(raw: Record<JobId, number>): Record<JobId, number> {
@@ -160,7 +185,10 @@ function redistributePercentages(
 export type JudgmentInput = {
   presetAnimal: string | null;
   customAnimalTrimmed: string;
+  diet?: AnimalDiet | null;
+  size?: AnimalSize | null;
   traits: string[];
+  trainingLabels?: Record<string, JobId | "freelancer"> | null;
 };
 
 export type JudgmentResult = {
@@ -171,9 +199,7 @@ export type JudgmentResult = {
 };
 
 export function computeJudgment(input: JudgmentInput): JudgmentResult {
-  const prior = getPriorForAnimalKey(effectiveAnimalKey(input));
-  const modelTraits = traitsForModel(input.traits);
-  const tSignal = traitSignalForJobs(modelTraits);
+  const labelSignal = trainingLabelSignal(input);
 
   const raw: Record<JobId, number> = {
     artist: 0,
@@ -182,7 +208,7 @@ export function computeJudgment(input: JudgmentInput): JudgmentResult {
     community: 0,
   };
   for (const j of JOB_IDS) {
-    raw[j] = WEIGHT_PRIOR * prior[j] + WEIGHT_TRAIT * tSignal[j];
+    raw[j] = labelSignal[j];
   }
 
   const probabilities = softmax(raw);
@@ -198,4 +224,51 @@ export function computeJudgment(input: JudgmentInput): JudgmentResult {
   }
 
   return { raw, probabilities, percentages, topJob };
+}
+
+function trainingLabelSignal(input: JudgmentInput): Record<JobId, number> {
+  const counts: Record<JobId, number> = {
+    artist: 0,
+    engineer: 0,
+    manager: 0,
+    community: 0,
+  };
+  const features = featureValueForInput(input);
+  const addMatches = (mode: "exact" | "diet" | "size" | "all") => {
+    let matched = 0;
+    for (const example of STEP5_ANIMALS) {
+      const label = input.trainingLabels?.[example.id] ?? example.originalLabel ?? PAST_LABEL_BY_ANIMAL[example.animalType ?? example.id] ?? example.dreamJob;
+      if (label === "freelancer") continue;
+      const exampleType = example.animalType ?? example.id;
+      const defaults = getDefaultProfileFeatures(exampleType);
+      const sameDiet = Boolean(features.diet && features.diet === (example.diet ?? defaults?.diet));
+      const sameSize = Boolean(features.size && features.size === (example.size ?? defaults?.size));
+      const ok =
+        mode === "all" ||
+        (mode === "exact" && sameDiet && sameSize) ||
+        (mode === "diet" && sameDiet) ||
+        (mode === "size" && sameSize);
+      if (!ok) continue;
+      counts[label] += mode === "exact" ? 4 : mode === "all" ? 1 : 2;
+      matched += 1;
+    }
+    return matched;
+  };
+
+  let matched = addMatches("exact");
+  if (matched === 0) matched = addMatches("diet");
+  if (matched === 0) matched = addMatches("size");
+  if (matched === 0) addMatches("all");
+
+  let best: JobId = "artist";
+  for (const j of JOB_IDS) {
+    if (counts[j] > counts[best]) best = j;
+  }
+
+  return {
+    artist: best === "artist" ? 1 : 0,
+    engineer: best === "engineer" ? 1 : 0,
+    manager: best === "manager" ? 1 : 0,
+    community: best === "community" ? 1 : 0,
+  };
 }

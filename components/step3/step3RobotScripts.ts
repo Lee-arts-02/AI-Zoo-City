@@ -1,33 +1,34 @@
 /** Central copy for Step 3 robot-only guidance. */
 
 export const STEP3_OVERVIEW_ENTRY =
-  "You can now click through the different districts to see what animals live in each one.";
+  "Let's look at the old Zoo City. These animals were already placed into four districts. Look closely: do you notice any patterns?";
 
 export const STEP3_DISTRICT_NEAR_INFO =
   "You can click INFO to see more data about this district.";
 
 export const STEP3_DISTRICT_NEAR_SORT_1 =
-  "You can use this organizer to help you find patterns in this city.";
+  "You can use this organizer to find feature patterns in this city.";
 
 export const STEP3_ORGANIZER_COLOR =
-  "First, find which animals appear in different districts, and use color to mark where you think each animal belongs.";
+  "The organizer is a thinking tool. District colors stay with the animals so you can connect the chart back to the old city.";
 
 export const STEP3_ORGANIZER_DRAG_1 =
-  "Now try dragging animals from the strip below. You may discover something interesting.";
+  "Now sort animals by the two features the classifier can see: size and diet.";
 
 export const STEP3_REVEAL_ASK =
   "Would you like to see more from the current Zoo City?";
 
 export const STEP3_POST_REVEAL =
-  "What interesting patterns do you notice when you compare districts?";
+  "Old city pattern found: animals with similar size and diet were often placed in similar districts.";
 
 /** Sorting-machine bridge: pause (ms) after line 1 before line 2 types. */
 export const STEP3_BRIDGE_SORTING_MACHINE_PAUSE_MS = 3000;
 
 export const STEP3_BRIDGE_LINE_1 =
-  "Do you want to know more about how the City Sorting Machine works?";
+  "You found an old city pattern. In the past, animals with similar size and diet were often placed in similar districts.";
 
-export const STEP3_BRIDGE_LINE_2 = "Let’s open the box!";
+export const STEP3_BRIDGE_LINE_2 =
+  "Now let's open the classifier and see how it learned from these past placements.";
 
 /** Stable array references for the robot guide. */
 export const STEP3_SCRIPT_OVERVIEW = [STEP3_OVERVIEW_ENTRY] as const;

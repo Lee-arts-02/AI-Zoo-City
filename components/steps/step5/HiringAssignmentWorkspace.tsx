@@ -288,7 +288,7 @@ export function HiringAssignmentWorkspace() {
           Chapter 5
         </p>
         <h2 id="step5-title" className="font-serif text-xl font-bold text-rose-950 sm:text-2xl lg:text-3xl">
-          Redesign the city, one animal at a time
+          Redesign the training labels, one animal at a time
         </h2>
         <div
           className="mx-auto flex w-full max-w-4xl items-end gap-2 sm:mx-0 sm:gap-3"
@@ -308,11 +308,13 @@ export function HiringAssignmentWorkspace() {
             />
             <div className="relative z-10 rounded-3xl border-2 border-sky-200/90 bg-white/95 px-4 py-3 shadow-[4px_4px_0_0_rgba(14,165,233,0.12)] sm:px-5 sm:py-4">
               <div className="space-y-2 font-serif text-xs leading-relaxed text-slate-800 sm:text-sm sm:leading-relaxed">
-                <p>Now it&apos;s your turn to redesign Zoo City.</p>
+                <p>Now it&apos;s your turn to redesign the training examples.</p>
                 <p>
-                  Look closely at each animal. You can see their{" "}
-                  <strong className="font-semibold text-slate-900">traits</strong>, check the{" "}
-                  <strong className="font-semibold text-slate-900">AI recommendation</strong>, and listen to{" "}
+                  Each animal has size, diet, and a current district label. When
+                  you move an animal, you change the{" "}
+                  <strong className="font-semibold text-slate-900">label</strong>{" "}
+                  the classifier can learn from. You can check the{" "}
+                  <strong className="font-semibold text-slate-900">classifier recommendation</strong>, and listen to{" "}
                   <strong className="font-semibold text-slate-900">their voices</strong>.
                 </p>
                 <p>
@@ -320,8 +322,9 @@ export function HiringAssignmentWorkspace() {
                   <strong className="font-semibold text-slate-900">your choices matter to the animals</strong>.
                 </p>
                 <p>
-                  You can choose a district from each animal&apos;s identity card, or drag animals directly on the
-                  map. Before you save, you can still move animals again and rethink your choices.
+                  You can choose a label from each animal&apos;s profile card, or
+                  drag animals directly on the map. Before you save, you can
+                  still move animals again and rethink your choices.
                 </p>
               </div>
             </div>
@@ -334,7 +337,7 @@ export function HiringAssignmentWorkspace() {
           <div className="relative flex min-h-[260px] flex-col rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-white/90 p-2 shadow-inner sm:min-h-[300px] sm:p-3">
             <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
               <p className="font-serif text-[11px] font-semibold uppercase tracking-wide text-stone-600 sm:text-xs sm:text-left">
-                City map ({decidedCount}/{STEP5_ANIMALS.length} placed · drag or tap)
+                City map ({decidedCount}/{STEP5_ANIMALS.length} labels checked · drag or tap)
               </p>
               {decidedCount >= NOTE_THRESHOLD && Object.keys(speechNotes).length > 0 ? (
                 <button
@@ -389,7 +392,8 @@ export function HiringAssignmentWorkspace() {
       <footer className="relative z-20 mt-2 shrink-0 border-t border-rose-200/90 bg-gradient-to-b from-[#fff7f7] via-rose-50/98 to-rose-50/95 pt-6 shadow-[0_-10px_36px_-12px_rgba(120,53,15,0.12)] sm:mt-4 sm:pt-7">
         <div className="mx-auto max-w-lg space-y-3 rounded-2xl border border-rose-200/70 bg-white/95 p-4 shadow-[0_8px_28px_-12px_rgba(120,53,15,0.15)] ring-1 ring-rose-100/60 sm:p-5">
           <p className="text-center font-serif text-xs leading-relaxed text-stone-600">
-            When you save, the story freezes here and the model updates from traits, dreams, and how your map differs from the old layout — not from headcounts alone.
+            When you save, the classifier learns from the updated profile labels.
+            Freelancer Hub becomes a new possible class label.
           </p>
           <button
             type="button"

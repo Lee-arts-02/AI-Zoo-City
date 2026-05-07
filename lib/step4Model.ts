@@ -1,14 +1,25 @@
 /**
  * Simplified conditional structure for Step 4 pedagogy:
- * single-token condition (Markov-style) vs fused multi-token state → softmax probabilities.
+ * simplified size/diet feature state for Step 4.
  */
 
-import { JOB_IDS, traitWeights, probabilitiesToPercentages } from "@/lib/aiModel";
-import type { JobId } from "@/types/game";
+import { JOB_IDS } from "@/lib/aiModel";
+import type { AnimalDiet, AnimalSize, JobId } from "@/types/game";
 import type { Step4Token } from "@/lib/step4Tokens";
-import { getAnimalPriorRecord } from "@/lib/step4Tokens";
 
 const EPS = 1e-9;
+
+const DIET_SIGNAL: Record<AnimalDiet, Record<JobId, number>> = {
+  Carnivore: { artist: 0.1, engineer: 0.2, manager: 0.45, community: 0.25 },
+  Herbivore: { artist: 0.28, engineer: 0.12, manager: 0.14, community: 0.46 },
+  Omnivore: { artist: 0.22, engineer: 0.28, manager: 0.26, community: 0.24 },
+};
+
+const SIZE_SIGNAL: Record<AnimalSize, Record<JobId, number>> = {
+  Small: { artist: 0.38, engineer: 0.22, manager: 0.18, community: 0.22 },
+  Medium: { artist: 0.22, engineer: 0.28, manager: 0.26, community: 0.24 },
+  Large: { artist: 0.12, engineer: 0.22, manager: 0.28, community: 0.38 },
+};
 
 function softmaxJobs(raw: Record<JobId, number>): Record<JobId, number> {
   const max = Math.max(...JOB_IDS.map((j) => raw[j]));
@@ -36,7 +47,7 @@ function softmaxJobs(raw: Record<JobId, number>): Record<JobId, number> {
   return out;
 }
 
-/** One-token conditional: P(job | token) from the token’s channel only (softmax over jobs). */
+/** One-feature conditional: P(job | feature) from the feature's channel only. */
 export function distributionGivenSingleToken(token: Step4Token): Record<JobId, number> {
   const raw: Record<JobId, number> = {
     artist: 0,
@@ -45,24 +56,20 @@ export function distributionGivenSingleToken(token: Step4Token): Record<JobId, n
     community: 0,
   };
 
-  if (token.kind === "animal") {
-    const prior = getAnimalPriorRecord(token.modelKey);
-    for (const j of JOB_IDS) {
-      raw[j] = Math.log((prior[j] ?? 0) + EPS);
-    }
-    return softmaxJobs(raw);
-  }
-
-  if (token.kind === "trait") {
-    const w = traitWeights[token.modelKey];
-    if (!w) {
-      for (const j of JOB_IDS) raw[j] = 0;
+  if (token.kind === "diet") {
+    const signal = DIET_SIGNAL[token.modelKey as AnimalDiet];
+    if (signal) {
+      for (const j of JOB_IDS) raw[j] = Math.log((signal[j] ?? 0) + EPS);
       return softmaxJobs(raw);
     }
-    for (const j of JOB_IDS) {
-      raw[j] = w[j];
+  }
+
+  if (token.kind === "size") {
+    const signal = SIZE_SIGNAL[token.modelKey as AnimalSize];
+    if (signal) {
+      for (const j of JOB_IDS) raw[j] = Math.log((signal[j] ?? 0) + EPS);
+      return softmaxJobs(raw);
     }
-    return softmaxJobs(raw);
   }
 
   for (const j of JOB_IDS) raw[j] = 0;
@@ -70,8 +77,7 @@ export function distributionGivenSingleToken(token: Step4Token): Record<JobId, n
 }
 
 /**
- * Multi-token state: summed log-channels → softmax (conditional on the active set).
- * Tokens contribute to a combined signal; jobs are not reached directly from each token.
+ * Multi-feature state: summed log-channels → softmax (conditional on the active set).
  */
 export function distributionFromActiveTokens(active: Step4Token[]): Record<JobId, number> {
   if (active.length === 0) {
@@ -93,82 +99,20 @@ export function distributionFromActiveTokens(active: Step4Token[]): Record<JobId
   };
 
   for (const token of active) {
-    if (token.kind === "animal") {
-      const prior = getAnimalPriorRecord(token.modelKey);
-      for (const j of JOB_IDS) {
-        raw[j] += Math.log((prior[j] ?? 0) + EPS);
+    if (token.kind === "diet") {
+      const signal = DIET_SIGNAL[token.modelKey as AnimalDiet];
+      if (signal) {
+        for (const j of JOB_IDS) raw[j] += Math.log((signal[j] ?? 0) + EPS) * 0.8;
       }
-    } else if (token.kind === "trait") {
-      const w = traitWeights[token.modelKey];
-      if (w) {
-        for (const j of JOB_IDS) {
-          raw[j] += w[j] * 1.08;
-        }
+    } else if (token.kind === "size") {
+      const signal = SIZE_SIGNAL[token.modelKey as AnimalSize];
+      if (signal) {
+        for (const j of JOB_IDS) raw[j] += Math.log((signal[j] ?? 0) + EPS) * 0.65;
       }
     }
   }
 
   return softmaxJobs(raw);
-}
-
-export function toPercentages(probs: Record<JobId, number>): Record<JobId, number> {
-  return probabilitiesToPercentages(probs);
-}
-
-export function pctDelta(
-  before: Record<JobId, number>,
-  after: Record<JobId, number>,
-): Record<JobId, number> {
-  const out: Record<JobId, number> = {
-    artist: 0,
-    engineer: 0,
-    manager: 0,
-    community: 0,
-  };
-  for (const j of JOB_IDS) {
-    out[j] = after[j] - before[j];
-  }
-  return out;
-}
-
-/** Impact of removing one token: L1 distance of probability vectors. */
-export function tokenImpactScore(
-  token: Step4Token,
-  allTokens: Step4Token[],
-  activeIds: Set<string>,
-): number {
-  const active = allTokens.filter((t) => activeIds.has(t.id));
-  const without = active.filter((t) => t.id !== token.id);
-  const pWith = distributionFromActiveTokens(active);
-  const pWithout = distributionFromActiveTokens(without);
-  let s = 0;
-  for (const j of JOB_IDS) {
-    s += Math.abs(pWith[j] - pWithout[j]);
-  }
-  return s;
-}
-
-export function highestImpactTokenId(
-  allTokens: Step4Token[],
-  activeIds: Set<string>,
-): string | null {
-  const active = allTokens.filter((t) => activeIds.has(t.id));
-  if (active.length === 0) return null;
-  let bestId: string | null = null;
-  let best = -1;
-  for (const t of active) {
-    const score = tokenImpactScore(t, allTokens, activeIds);
-    if (score > best) {
-      best = score;
-      bestId = t.id;
-    }
-  }
-  return bestId;
-}
-
-/** Strength of edge fusion → job (for line width). */
-export function fusionToJobStrengths(probs: Record<JobId, number>): Record<JobId, number> {
-  return { ...probs };
 }
 
 export { JOB_IDS };

@@ -1,12 +1,13 @@
 "use client";
 
-import { computeJudgment, JOB_DISPLAY, JOB_IDS } from "@/lib/aiModel";
+import { computeJudgment, JOB_DISPLAY } from "@/lib/aiModel";
 import {
-  APPROVAL_MIN_TOP_PROBABILITY,
   getApprovalDetailKind,
   isDreamRoleApproved,
 } from "@/lib/judgmentApproval";
 import { buildJudgmentExplanation } from "@/lib/judgmentExplanation";
+import { AnimalProfileCard } from "@/components/shared/AnimalProfileCard";
+import { buildLearnerProfileCardData } from "@/lib/profileFeatures";
 import {
   getAnimalDisplayName,
   getDreamDisplayLabel,
@@ -25,7 +26,7 @@ export type Step2JudgmentProps = {
 };
 
 /**
- * Step 2 — Deterministic AI judgment with softmax probabilities
+ * Step 2 — First classification from size and diet.
  */
 export function Step2Judgment({
   onBackToWelcome,
@@ -41,7 +42,8 @@ export function Step2Judgment({
       JSON.stringify({
         p: learner.presetAnimal,
         c: learner.customAnimal.trim(),
-        t: learner.traits,
+        diet: learner.diet,
+        size: learner.size,
         d: learner.dreamJob,
         dd: learner.dreamDistrict,
         cd: learner.customDreamJob.trim(),
@@ -49,7 +51,8 @@ export function Step2Judgment({
     [
       learner.presetAnimal,
       learner.customAnimal,
-      learner.traits,
+      learner.diet,
+      learner.size,
       learner.dreamJob,
       learner.dreamDistrict,
       learner.customDreamJob,
@@ -76,7 +79,9 @@ export function Step2Judgment({
     return computeJudgment({
       presetAnimal: learner.presetAnimal,
       customAnimalTrimmed: learner.customAnimal.trim(),
-      traits: learner.traits,
+      diet: learner.diet,
+      size: learner.size,
+      traits: [],
     });
   }, [complete, learner]);
 
@@ -101,9 +106,14 @@ export function Step2Judgment({
     playDecisionSfx(approved);
   }, [complete, judgment, inputKey, approved, playDecisionSfx]);
 
-  const tokens = useMemo(
-    () => learner.description.split(/\s+/).filter(Boolean),
-    [learner.description],
+  const profileCard = useMemo(() => buildLearnerProfileCardData(learner), [learner]);
+  const featureChips = useMemo(
+    () =>
+      [
+        profileCard.size ?? "",
+        profileCard.diet ?? "",
+      ].filter(Boolean),
+    [profileCard],
   );
 
   if (!complete) {
@@ -119,8 +129,8 @@ export function Step2Judgment({
           Finish your character first
         </h2>
         <p className="mb-6 font-serif text-lg text-sky-950/90">
-          Go back to the welcome page and pick an animal, traits, and a dream
-          role (preset or custom) so the AI can use your profile.
+          Go back to the welcome page and create an animal profile with size,
+          diet, and a dream role.
         </p>
         <button
           type="button"
@@ -140,22 +150,19 @@ export function Step2Judgment({
   const animalDisplay = getAnimalDisplayName(learner);
   const explanation = buildJudgmentExplanation(
     animalDisplay,
-    learner.traits,
+    [],
     judgment.topJob,
   );
 
   const dreamTitle = getDreamDisplayLabel(learner);
   const topTitle = JOB_DISPLAY[judgment.topJob].title;
   const detailKind = getApprovalDetailKind(judgment, dreamJobId);
-  const dreamPct = judgment.percentages[dreamJobId];
-  const topPct = judgment.percentages[judgment.topJob];
-
   const decisionSubline =
     detailKind === "aligned"
-      ? "Your dream role lines up with the AI’s strongest guess, and the model is fairly sure."
+      ? "Your dream role lines up with the classifier’s district label."
       : detailKind === "different_role"
-        ? `The AI’s best guess (${topTitle}) is not the same category as your dream pick—we show why below if you want details.`
-        : `The AI agrees on your dream role as the top pick, but the score is below ${Math.round(APPROVAL_MIN_TOP_PROBABILITY * 100)}%—so we mark this as “not sure yet” instead of a strong match.`;
+        ? `The classifier sorted this profile into ${topTitle}, which is different from your dream pick.`
+        : "The classifier label and your dream are close, but this is still only a machine classification.";
 
   return (
     <section
@@ -170,7 +177,7 @@ export function Step2Judgment({
           id="step2-title"
           className="mb-8 text-center font-serif text-3xl font-bold text-sky-950"
         >
-          AI judgment
+          First AI Classification
         </h2>
 
         {phase === "loading" && (
@@ -180,19 +187,19 @@ export function Step2Judgment({
             aria-live="polite"
           >
             <p className="mb-4 text-center font-serif text-lg font-semibold text-sky-900">
-              Analyzing your profile…
+              Classifying your animal profile…
             </p>
             <p className="mb-3 text-center font-serif text-sm text-sky-800/80">
-              Full sentence being checked:
+              Profile features being checked:
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              {tokens.map((word, i) => (
+              {featureChips.map((feature, i) => (
                 <span
-                  key={`${word}-${i}`}
+                  key={`${feature}-${i}`}
                   className="animate-pulse rounded-full bg-sky-200 px-3 py-1 font-mono text-sm text-sky-950"
                   style={{ animationDelay: `${i * 80}ms` }}
                 >
-                  {word}
+                  {feature}
                 </span>
               ))}
             </div>
@@ -230,22 +237,25 @@ export function Step2Judgment({
               </p>
             </div>
 
-            <div className="rounded-2xl border-2 border-sky-300 bg-white/90 p-5 text-center shadow-sm sm:p-6">
-              <p className="font-serif text-sm text-sky-800/80">
-                Your dream
-              </p>
-              <p className="font-serif text-xl font-semibold text-sky-950">
-                {dreamTitle}
-              </p>
-              <p className="mt-4 font-serif text-sm text-sky-800/80">
-                AI top pick
-              </p>
-              <p className="font-serif text-xl font-semibold text-indigo-900">
-                {topTitle}{" "}
-                <span className="text-base font-normal text-sky-700">
-                  ({topPct}%)
-                </span>
-              </p>
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-stretch">
+              <AnimalProfileCard
+                profile={profileCard}
+                title="Your Animal Profile"
+                compact
+                className="mx-auto h-full w-full max-w-md text-left"
+              />
+              <div className="rounded-2xl border-2 border-indigo-200 bg-white/90 p-5 text-center shadow-sm sm:p-6">
+                <p className="font-serif text-xs font-bold uppercase tracking-[0.18em] text-indigo-700/80">
+                  Classification Output
+                </p>
+                <p className="mt-3 font-serif text-xl font-semibold text-indigo-900">
+                  {JOB_DISPLAY[judgment.topJob].placeName}
+                </p>
+                <p className="mx-auto mt-3 max-w-lg font-serif text-sm font-semibold text-sky-900">
+                  The classifier used size and diet, not your dream ({dreamTitle}),
+                  to make this classification.
+                </p>
+              </div>
             </div>
 
             <p className="text-center font-serif text-xl font-semibold text-sky-950">
@@ -265,47 +275,27 @@ export function Step2Judgment({
               {detailsOpen && (
                 <div className="w-full rounded-2xl border-2 border-indigo-200 bg-indigo-50/90 p-5 text-left shadow-inner md:p-6">
                   <h3 className="mb-3 font-serif text-lg font-bold text-indigo-950">
-                    How the numbers line up
+                    Why did the machine classify you this way?
                   </h3>
-                  <p className="mb-4 font-serif text-sm leading-relaxed text-indigo-950/95">
-                    Chance for <strong>your dream category</strong> (
-                    {JOB_DISPLAY[dreamJobId].title}):{" "}
-                    <strong className="tabular-nums">{dreamPct}%</strong>. Same
-                    math is used for the green/red decision: the top job must
-                    match your dream category and score at least{" "}
-                    {Math.round(APPROVAL_MIN_TOP_PROBABILITY * 100)}%.
+                  <p className="mb-3 font-serif text-sm font-bold text-indigo-950">
+                    It saw:
                   </p>
-                  <ul className="mb-6 space-y-3">
-                    {JOB_IDS.map((j) => {
-                      const pct = judgment.percentages[j];
-                      return (
-                        <li key={j}>
-                          <div className="mb-1 flex justify-between font-serif text-sm text-indigo-950">
-                            <span>{JOB_DISPLAY[j].title}</span>
-                            <span className="tabular-nums">{pct}%</span>
-                          </div>
-                          <div className="h-2.5 overflow-hidden rounded-full border border-indigo-200 bg-white">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-sky-400"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        </li>
-                      );
-                    })}
+                  <ul className="mb-6 space-y-2 font-serif text-sm text-indigo-950">
+                    <li className="rounded-xl bg-white px-3 py-2">
+                      Size: <strong>{profileCard.size ?? "Unknown"}</strong>
+                    </li>
+                    <li className="rounded-xl bg-white px-3 py-2">
+                      Diet: <strong>{profileCard.diet ?? "Unknown"}</strong>
+                    </li>
                   </ul>
                   <h4 className="mb-2 font-serif font-bold text-indigo-950">
-                    Why the model leaned this way
+                    Why the classifier leaned this way
                   </h4>
                   <p className="font-serif text-sm leading-relaxed text-indigo-950">
                     {explanation}
                   </p>
                   <p className="mt-4 font-serif text-sm text-indigo-900/85">
-                    {detailKind === "different_role"
-                      ? "Traits and animal type pushed the model toward a different role than the dream category you picked."
-                      : detailKind === "uncertain"
-                        ? "Your traits matched the top role, but scores were spread out—try tweaking traits to see numbers shift."
-                        : "Your traits and animal pattern fit this role strongly in the model’s view."}
+                    This classification is not your destiny. It is what the machine learned from past labels.
                   </p>
                 </div>
               )}

@@ -22,10 +22,10 @@ export function Step6QuadrantOrganizer({ placements }: Step6QuadrantOrganizerPro
   return (
     <div className="mx-auto w-full max-w-lg rounded-2xl border border-amber-200/70 bg-white/90 p-4 shadow-inner ring-1 ring-amber-900/5 sm:p-5">
       <h3 className="text-center font-serif text-lg font-bold text-amber-950">
-        City pattern map
+        City Pattern Map
       </h3>
       <p className="mt-1 text-center font-serif text-sm text-amber-900/75">
-        Where animals fall on two axes after your redesign — a simple lens, not a grade.
+        Feature patterns after your redesign: diet, size, and district labels.
       </p>
 
       <div className="relative mx-auto mt-5 aspect-square w-full max-w-[420px]">
